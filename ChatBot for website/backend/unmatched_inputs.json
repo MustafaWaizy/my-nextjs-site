@@ -1,0 +1,653 @@
+[
+  {
+    "timestamp": "2025-10-08T22:25:19.085449",
+    "user_input": "can i bring my cats at the office?",
+    "method_used": "suggestion_fallback",
+    "scores": {
+      "intent_conf": 0.3,
+      "semantic_conf": 0.20368477702140808,
+      "fuzzy_conf": 0.0,
+      "fallback_conf": -11.070005416870117
+    },
+    "suggestions": [
+      "who can participate in your programs?"
+    ],
+    "llm_response": null
+  },
+  {
+    "timestamp": "2025-10-08T22:26:42.341779",
+    "user_input": "you are not smart",
+    "method_used": "suggestion_fallback",
+    "scores": {
+      "intent_conf": 0.3,
+      "semantic_conf": 0.2517346143722534,
+      "fuzzy_conf": 0.0,
+      "fallback_conf": -8.905908584594727
+    },
+    "suggestions": [
+      "who are you?",
+      "chitchat"
+    ],
+    "llm_response": null
+  },
+  {
+    "timestamp": "2025-10-09T00:24:48.352831",
+    "user_input": "waizy",
+    "method_used": "suggestion_fallback",
+    "scores": {
+      "intent_conf": 0.05578473271852718,
+      "semantic_conf": 0.5797628164291382,
+      "fuzzy_conf": 0.0,
+      "fallback_conf": 5.881914138793945
+    },
+    "suggestions": [
+      "Who is G. Mustafa Waizy?",
+      "Who is Sayed Nafe Sadat?",
+      "Who is Jamshid Sultanzada?"
+    ],
+    "llm_response": null
+  },
+  {
+    "timestamp": "2025-10-09T10:11:22.286655",
+    "user_input": "can i bring my cat?",
+    "method_used": "suggestion_fallback",
+    "scores": {
+      "intent_conf": 0.05288208506646026,
+      "semantic_conf": 0.19900944828987122,
+      "fuzzy_conf": 0.0,
+      "fallback_conf": 0.0
+    },
+    "suggestions": [],
+    "llm_response": null
+  },
+  {
+    "timestamp": "2025-10-09T10:19:54.017528",
+    "user_input": "can i bring my cats?",
+    "method_used": "suggestion_fallback",
+    "scores": {
+      "intent_conf": 0.05288208506646026,
+      "semantic_conf": 0.1797630935907364,
+      "fuzzy_conf": 0.0,
+      "fallback_conf": 0.0
+    },
+    "suggestions": [],
+    "llm_response": null
+  },
+  {
+    "timestamp": "2025-10-09T10:21:48.444509",
+    "user_input": "can i bring my cats?",
+    "method_used": "suggestion_fallback",
+    "scores": {
+      "intent_conf": 0.05288208506646026,
+      "semantic_conf": 0.1797630935907364,
+      "fuzzy_conf": 0.0,
+      "fallback_conf": 0.0
+    },
+    "suggestions": [],
+    "llm_response": null
+  },
+  {
+    "timestamp": "2025-10-09T10:25:07.636993",
+    "user_input": "can i bring my cats?",
+    "method_used": "suggestion_fallback",
+    "scores": {
+      "intent_conf": 0.05288208506646026,
+      "semantic_conf": 0.1797630935907364,
+      "fuzzy_conf": 0.0,
+      "fallback_conf": 0.0
+    },
+    "suggestions": [],
+    "llm_response": null
+  },
+  {
+    "timestamp": "2025-10-09T10:26:34.916252",
+    "user_input": "can i bring my cats?",
+    "method_used": "suggestion_fallback",
+    "scores": {
+      "intent_conf": 0.05288208506646026,
+      "semantic_conf": 0.1797630935907364,
+      "fuzzy_conf": 0.0,
+      "fallback_conf": 0.0
+    },
+    "suggestions": [],
+    "llm_response": null
+  },
+  {
+    "timestamp": "2025-10-09T10:31:12.111389",
+    "user_input": "can i bring my cats?",
+    "method_used": "suggestion_fallback",
+    "scores": {
+      "intent_conf": 0.05288208506646026,
+      "semantic_conf": 0.1797630935907364,
+      "fuzzy_conf": 0.0,
+      "fallback_conf": 0.0
+    },
+    "suggestions": [],
+    "llm_response": null
+  },
+  {
+    "timestamp": "2025-10-09T10:31:12.297154",
+    "user_input": "can i bring my cats?",
+    "method_used": "suggestion_fallback",
+    "scores": {
+      "intent_conf": 0.05288208506646026,
+      "semantic_conf": 0.1797630935907364,
+      "fuzzy_conf": 0.0,
+      "fallback_conf": 0.0
+    },
+    "suggestions": [],
+    "llm_response": null
+  },
+  {
+    "timestamp": "2025-10-09T11:11:14.978132",
+    "user_input": "marinam",
+    "method_used": "suggestion_fallback",
+    "scores": {
+      "intent_conf": 0.05713796752556418,
+      "semantic_conf": 0.4286767840385437,
+      "fuzzy_conf": 0.0,
+      "fallback_conf": -9.781639099121094
+    },
+    "suggestions": [
+      "Who is Mariam?",
+      "goodbye",
+      "greeting"
+    ],
+    "llm_response": null
+  },
+  {
+    "timestamp": "2025-10-09T11:11:28.107690",
+    "user_input": "sadat",
+    "method_used": "suggestion_fallback",
+    "scores": {
+      "intent_conf": 0.056001519650415596,
+      "semantic_conf": 0.559426486492157,
+      "fuzzy_conf": 0.0,
+      "fallback_conf": 3.082460880279541
+    },
+    "suggestions": [
+      "Who is Sayed Nafe Sadat?",
+      "chitchat",
+      "goodbye"
+    ],
+    "llm_response": null
+  },
+  {
+    "timestamp": "2025-10-09T11:11:44.464274",
+    "user_input": "can i bring my cats?",
+    "method_used": "suggestion_fallback",
+    "scores": {
+      "intent_conf": 0.05288208506646026,
+      "semantic_conf": 0.1797630935907364,
+      "fuzzy_conf": 0.0,
+      "fallback_conf": 0.0
+    },
+    "suggestions": [],
+    "llm_response": null
+  },
+  {
+    "timestamp": "2025-10-09T11:12:38.293436",
+    "user_input": "marim",
+    "method_used": "suggestion_fallback",
+    "scores": {
+      "intent_conf": 0.05713796752556418,
+      "semantic_conf": 0.48722827434539795,
+      "fuzzy_conf": 0.0,
+      "fallback_conf": -6.769944190979004
+    },
+    "suggestions": [
+      "Who is Mariam?",
+      "goodbye",
+      "greeting"
+    ],
+    "llm_response": null
+  },
+  {
+    "timestamp": "2025-10-09T11:19:14.086525",
+    "user_input": "marm",
+    "method_used": "suggestion_fallback",
+    "scores": {
+      "intent_conf": 0.05713796752556418,
+      "semantic_conf": 0.34968751668930054,
+      "fuzzy_conf": 0.0,
+      "fallback_conf": -8.319965362548828
+    },
+    "suggestions": [
+      "Who is Mariam?",
+      "greeting",
+      "contact_us"
+    ],
+    "llm_response": null
+  },
+  {
+    "timestamp": "2025-10-09T11:19:27.126742",
+    "user_input": "marim",
+    "method_used": "suggestion_fallback",
+    "scores": {
+      "intent_conf": 0.05713796752556418,
+      "semantic_conf": 0.48722827434539795,
+      "fuzzy_conf": 0.0,
+      "fallback_conf": -6.769944190979004
+    },
+    "suggestions": [
+      "Who is Mariam?",
+      "goodbye",
+      "greeting"
+    ],
+    "llm_response": null
+  },
+  {
+    "timestamp": "2025-10-09T11:19:55.023848",
+    "user_input": "nafe",
+    "method_used": "suggestion_fallback",
+    "scores": {
+      "intent_conf": 0.056001519650415596,
+      "semantic_conf": 0.42420533299446106,
+      "fuzzy_conf": 0.0,
+      "fallback_conf": 3.250534772872925
+    },
+    "suggestions": [
+      "Who is Sayed Nafe Sadat?",
+      "goodbye",
+      "greeting"
+    ],
+    "llm_response": null
+  },
+  {
+    "timestamp": "2025-10-09T11:20:31.097727",
+    "user_input": "marm",
+    "method_used": "suggestion_fallback",
+    "scores": {
+      "intent_conf": 0.05713796752556418,
+      "semantic_conf": 0.34968751668930054,
+      "fuzzy_conf": 0.0,
+      "fallback_conf": -8.319965362548828
+    },
+    "suggestions": [
+      "Who is Mariam?",
+      "greeting",
+      "contact_us"
+    ],
+    "llm_response": null
+  },
+  {
+    "timestamp": "2025-10-09T11:20:51.745068",
+    "user_input": "nafe",
+    "method_used": "suggestion_fallback",
+    "scores": {
+      "intent_conf": 0.056001519650415596,
+      "semantic_conf": 0.42420533299446106,
+      "fuzzy_conf": 0.0,
+      "fallback_conf": 3.250534772872925
+    },
+    "suggestions": [
+      "Who is Sayed Nafe Sadat?",
+      "goodbye",
+      "greeting"
+    ],
+    "llm_response": null
+  },
+  {
+    "timestamp": "2025-10-09T11:22:12.462277",
+    "user_input": "nafe",
+    "method_used": "suggestion_fallback",
+    "scores": {
+      "intent_conf": 0.056001519650415596,
+      "semantic_conf": 0.42420533299446106,
+      "fuzzy_conf": 0.0,
+      "fallback_conf": 3.250534772872925
+    },
+    "suggestions": [
+      "Who is Sayed Nafe Sadat?",
+      "goodbye",
+      "greeting"
+    ],
+    "llm_response": null
+  },
+  {
+    "timestamp": "2025-10-09T11:35:05.014907",
+    "user_input": "nafe",
+    "method_used": "suggestion_fallback",
+    "scores": {
+      "intent_conf": 0.056001519650415596,
+      "semantic_conf": 0.42420533299446106,
+      "fuzzy_conf": 0.0,
+      "fallback_conf": 3.250534772872925
+    },
+    "suggestions": [
+      "Who is Sayed Nafe Sadat?",
+      "goodbye",
+      "greeting"
+    ],
+    "llm_response": null
+  },
+  {
+    "timestamp": "2025-10-09T11:37:54.036676",
+    "user_input": "nafe",
+    "method_used": "suggestion_fallback",
+    "scores": {
+      "intent_conf": 0.056001519650415596,
+      "semantic_conf": 0.42420533299446106,
+      "fuzzy_conf": 0.0,
+      "fallback_conf": 3.250534772872925
+    },
+    "suggestions": [
+      "Who is Sayed Nafe Sadat?",
+      "goodbye",
+      "greeting"
+    ],
+    "llm_response": null
+  },
+  {
+    "timestamp": "2025-10-09T11:42:58.224042",
+    "user_input": "nafe",
+    "method_used": "suggestion_fallback",
+    "scores": {
+      "intent_conf": 0.056001519650415596,
+      "semantic_conf": 0.42420533299446106,
+      "fuzzy_conf": 0.0,
+      "fallback_conf": 3.250534772872925
+    },
+    "suggestions": [
+      "Who is Sayed Nafe Sadat?",
+      "goodbye",
+      "greeting"
+    ],
+    "llm_response": null
+  },
+  {
+    "timestamp": "2025-10-09T11:44:02.281499",
+    "user_input": "nafe",
+    "method_used": "suggestion_fallback",
+    "scores": {
+      "intent_conf": 0.056001519650415596,
+      "semantic_conf": 0.42420533299446106,
+      "fuzzy_conf": 0.0,
+      "fallback_conf": 3.250534772872925
+    },
+    "suggestions": [
+      "Who is Sayed Nafe Sadat?",
+      "goodbye",
+      "greeting"
+    ],
+    "llm_response": null
+  },
+  {
+    "timestamp": "2025-10-09T11:46:33.669120",
+    "user_input": "nafe",
+    "method_used": "suggestion_fallback",
+    "scores": {
+      "intent_conf": 0.056001519650415596,
+      "semantic_conf": 0.42420533299446106,
+      "fuzzy_conf": 0.0,
+      "fallback_conf": 3.250534772872925
+    },
+    "suggestions": [
+      "Who is Sayed Nafe Sadat?",
+      "goodbye",
+      "greeting"
+    ],
+    "llm_response": null
+  },
+  {
+    "timestamp": "2025-10-09T11:46:38.345188",
+    "user_input": "nafe",
+    "method_used": "suggestion_fallback",
+    "scores": {
+      "intent_conf": 0.056001519650415596,
+      "semantic_conf": 0.42420533299446106,
+      "fuzzy_conf": 0.0,
+      "fallback_conf": 3.250534772872925
+    },
+    "suggestions": [
+      "Who is Sayed Nafe Sadat?",
+      "goodbye",
+      "greeting"
+    ],
+    "llm_response": null
+  },
+  {
+    "timestamp": "2025-10-09T11:50:16.652081",
+    "user_input": "nafe",
+    "method_used": "suggestion_fallback",
+    "scores": {
+      "intent_conf": 0.056001519650415596,
+      "semantic_conf": 0.42420533299446106,
+      "fuzzy_conf": 0.0,
+      "fallback_conf": 3.250534772872925
+    },
+    "suggestions": [
+      "Who is Sayed Nafe Sadat?",
+      "goodbye",
+      "greeting"
+    ],
+    "llm_response": null
+  },
+  {
+    "timestamp": "2025-10-09T11:51:27.062993",
+    "user_input": "can i hlep",
+    "method_used": "suggestion_fallback",
+    "scores": {
+      "intent_conf": 0.05288208506646026,
+      "semantic_conf": 0.21689213812351227,
+      "fuzzy_conf": 0.0,
+      "fallback_conf": -11.196859359741211
+    },
+    "suggestions": [
+      "greeting"
+    ],
+    "llm_response": null
+  },
+  {
+    "timestamp": "2025-10-09T11:51:35.900225",
+    "user_input": "can i sponser?",
+    "method_used": "suggestion_fallback",
+    "scores": {
+      "intent_conf": 0.05288208506646026,
+      "semantic_conf": 0.25382134318351746,
+      "fuzzy_conf": 0.0,
+      "fallback_conf": -11.05753231048584
+    },
+    "suggestions": [
+      "contact_us",
+      "who can participate in your programs?",
+      "where is your address?"
+    ],
+    "llm_response": null
+  },
+  {
+    "timestamp": "2025-10-09T14:08:29.956399",
+    "user_input": "you are not smart enough?",
+    "method_used": "suggestion_fallback",
+    "scores": {
+      "intent_conf": 0.06673838496065032,
+      "semantic_conf": 0.18805059790611267,
+      "fuzzy_conf": 0.0,
+      "fallback_conf": 0.0
+    },
+    "suggestions": [],
+    "llm_response": null
+  },
+  {
+    "timestamp": "2025-10-09T14:13:55.054216",
+    "user_input": "marim",
+    "method_used": "suggestion_fallback",
+    "scores": {
+      "intent_conf": 0.05713796752556418,
+      "semantic_conf": 0.48722827434539795,
+      "fuzzy_conf": 0.0,
+      "fallback_conf": -6.769944190979004
+    },
+    "suggestions": [
+      "Who is Mariam?",
+      "goodbye",
+      "greeting"
+    ],
+    "llm_response": null
+  },
+  {
+    "timestamp": "2025-10-12T11:45:26.827658",
+    "user_input": "can i bring my cat to office?",
+    "method_used": "suggestion_fallback",
+    "scores": {
+      "intent_conf": 0.05470462336872963,
+      "semantic_conf": 0.20250317454338074,
+      "fuzzy_conf": 0.0,
+      "fallback_conf": -11.4075927734375
+    },
+    "suggestions": [
+      "how can students intern at Unity to Serve?"
+    ],
+    "llm_response": null
+  },
+  {
+    "timestamp": "2025-10-12T11:45:38.129867",
+    "user_input": "cats?",
+    "method_used": "suggestion_fallback",
+    "scores": {
+      "intent_conf": 0.05713796752556418,
+      "semantic_conf": 0.3174523711204529,
+      "fuzzy_conf": 0.0,
+      "fallback_conf": -7.83725118637085
+    },
+    "suggestions": [
+      "who are you?",
+      "chitchat",
+      "team members?"
+    ],
+    "llm_response": null
+  },
+  {
+    "timestamp": "2025-10-12T11:46:08.153643",
+    "user_input": "can i bring my dogs to the office",
+    "method_used": "suggestion_fallback",
+    "scores": {
+      "intent_conf": 0.06603395581877411,
+      "semantic_conf": 0.2108728438615799,
+      "fuzzy_conf": 0.0,
+      "fallback_conf": -11.41727352142334
+    },
+    "suggestions": [
+      "how can students intern at Unity to Serve?"
+    ],
+    "llm_response": null
+  },
+  {
+    "timestamp": "2025-10-12T11:50:58.612986",
+    "user_input": "how re you?",
+    "method_used": "suggestion_fallback",
+    "scores": {
+      "intent_conf": 0.052094747122112914,
+      "semantic_conf": 0.5135249495506287,
+      "fuzzy_conf": 0.0,
+      "fallback_conf": -6.494190692901611
+    },
+    "suggestions": [
+      "who are you?",
+      "goodbye",
+      "greeting"
+    ],
+    "llm_response": null
+  },
+  {
+    "timestamp": "2025-10-13T08:50:58.331493",
+    "user_input": "services?",
+    "method_used": "suggestion_fallback",
+    "scores": {
+      "intent_conf": 0.05713796752556418,
+      "semantic_conf": 0.3939542770385742,
+      "fuzzy_conf": 0.0,
+      "fallback_conf": -7.0069169998168945
+    },
+    "suggestions": [
+      "how does Unity to Serve help children and youth?",
+      "where does Unity to Serve operate?",
+      "what is Unity to Serve?"
+    ],
+    "llm_response": null
+  },
+  {
+    "timestamp": "2025-10-13T08:51:47.672762",
+    "user_input": "what services you provide for  rafugees?",
+    "method_used": "suggestion_fallback",
+    "scores": {
+      "intent_conf": 0.05242461743422845,
+      "semantic_conf": 0.3900851905345917,
+      "fuzzy_conf": 0.0,
+      "fallback_conf": -10.654973030090332
+    },
+    "suggestions": [
+      "volunteer_interest",
+      "does Unity to Serve help refugees?",
+      "who can participate in your programs?"
+    ],
+    "llm_response": null
+  },
+  {
+    "timestamp": "2025-10-14T21:25:52.254740",
+    "user_input": "do you learn",
+    "method_used": "suggestion_fallback",
+    "scores": {
+      "intent_conf": 0.05481951272256106,
+      "semantic_conf": 0.292558878660202,
+      "fuzzy_conf": 0.0,
+      "fallback_conf": -8.76018238067627
+    },
+    "suggestions": [
+      "who are you?",
+      "what tech training does Unity to Serve provide?",
+      "greeting"
+    ],
+    "llm_response": null
+  },
+  {
+    "timestamp": "2025-10-14T21:26:01.527600",
+    "user_input": "do you learn",
+    "method_used": "suggestion_fallback",
+    "scores": {
+      "intent_conf": 0.05481951272256106,
+      "semantic_conf": 0.292558878660202,
+      "fuzzy_conf": 0.0,
+      "fallback_conf": -8.76018238067627
+    },
+    "suggestions": [
+      "who are you?",
+      "what tech training does Unity to Serve provide?",
+      "greeting"
+    ],
+    "llm_response": null
+  },
+  {
+    "timestamp": "2025-10-14T21:26:08.538174",
+    "user_input": "no",
+    "method_used": "suggestion_fallback",
+    "scores": {
+      "intent_conf": 0.05713796752556418,
+      "semantic_conf": 0.2567342221736908,
+      "fuzzy_conf": 0.0,
+      "fallback_conf": -6.578639030456543
+    },
+    "suggestions": [
+      "goodbye",
+      "who are you?",
+      "greeting"
+    ],
+    "llm_response": null
+  },
+  {
+    "timestamp": "2025-10-14T21:26:24.129868",
+    "user_input": "\u263a\ufe0f",
+    "method_used": "suggestion_fallback",
+    "scores": {
+      "intent_conf": 0.05713796752556418,
+      "semantic_conf": 0.3217981457710266,
+      "fuzzy_conf": 0.0,
+      "fallback_conf": -8.293536186218262
+    },
+    "suggestions": [
+      "greeting",
+      "goodbye"
+    ],
+    "llm_response": null
+  }
+]

@@ -1,0 +1,14 @@
+
+Hope you enjoy your new logo, here are the people that
+made your beautiful logo happen :)
+font name: VT323-Regular
+font link: https://fonts.google.com/specimen/VT323
+font author: Peter Hull
+font author site: https://github.com/phoikoi
+Slogan Font: KaushanScript-Regular.ttf
+
+icon designer: Juicy Fish
+icon designer link: /creator/admin885/
+        
+{"bg":"#EFF5E9","icon-gradient-0":"#666C35","icon-gradient-1":"#77D636","font":"#213210","slogan":"#354624"}
+      

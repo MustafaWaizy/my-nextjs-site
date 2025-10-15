@@ -1,0 +1,16 @@
+{
+  "labels":[
+    "donate_inquiry",
+    "donation_tax",
+    "volunteer_interest",
+    "program_info_afghanistan",
+    "program_info_digital",
+    "refugee_support",
+    "contact_us",
+    "event_info",
+    "language_switch",
+    "mission_overview"
+  ],
+  "threshold":0.0,
+  "positive_label":null
+}
