@@ -1,8 +1,15 @@
 "use client";
 
 import Image from "next/image";
+import { useRouter } from "next/navigation";
 
 export default function ECommerceSolutionPage() {
+  const router = useRouter();
+
+  const handleRequestClick = () => {
+    router.push("/get-support/request-quote");
+  };
+
   return (
     <div className="py-16 px-6 max-w-5xl mx-auto font-orbitron">
       {/* Page Title */}
@@ -28,22 +35,32 @@ export default function ECommerceSolutionPage() {
           Launch a <strong className="text-cyan-500">powerful and scalable e-commerce platform</strong> that drives sales, enhances user experience, and integrates seamlessly with your business ecosystem.
         </p>
         <p>
-          Our solutions leverage <strong className="text-purple-500">AI-driven product recommendations, inventory management, and secure payment processing</strong> to maximize conversions and customer satisfaction.
+          Our solutions leverage{" "}
+          <strong className="text-purple-500">AI-driven product recommendations, inventory management, and secure payment processing</strong>{" "}
+          to maximize conversions and customer satisfaction.
         </p>
         <p>
-          We design responsive, mobile-friendly stores with <strong className="text-blue-500">intuitive navigation, fast performance, and optimized checkout flows</strong> for a smooth shopping experience.
+          We design responsive, mobile-friendly stores with{" "}
+          <strong className="text-blue-500">intuitive navigation, fast performance, and optimized checkout flows</strong>{" "}
+          for a smooth shopping experience.
         </p>
         <p>
-          Integrate your e-commerce solution with CRM, ERP, and analytics systems to enable <strong className="text-cyan-400">data-driven decisions, automated marketing, and real-time insights</strong>.
+          Integrate your e-commerce solution with CRM, ERP, and analytics systems to enable{" "}
+          <strong className="text-cyan-400">data-driven decisions, automated marketing, and real-time insights</strong>.
         </p>
         <p>
-          Partner with us to create <strong className="text-purple-400">AI-powered, full-featured e-commerce solutions</strong> that boost sales, enhance customer loyalty, and scale with your business growth.
+          Partner with us to create{" "}
+          <strong className="text-purple-400">AI-powered, full-featured e-commerce solutions</strong>{" "}
+          that boost sales, enhance customer loyalty, and scale with your business growth.
         </p>
       </div>
 
       {/* Call-to-action Button */}
       <div className="mt-12 text-center">
-        <button className="px-8 py-4 bg-gradient-to-r from-cyan-400 to-purple-500 text-white text-lg font-semibold rounded-xl shadow-lg hover:scale-105 transition-transform duration-300">
+        <button
+          onClick={handleRequestClick}
+          className="px-8 py-4 bg-gradient-to-r from-cyan-400 to-purple-500 text-white text-lg font-semibold rounded-xl shadow-lg hover:scale-105 transition-transform duration-300"
+        >
           Request a Demo
         </button>
       </div>

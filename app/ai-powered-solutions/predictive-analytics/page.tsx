@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import Link from "next/link";
 
 export default function PredictiveAnalyticsPage() {
   return (
@@ -25,24 +26,40 @@ export default function PredictiveAnalyticsPage() {
       {/* Description Section */}
       <div className="space-y-8 text-gray-700 text-lg leading-relaxed">
         <p>
-          Harness the power of <strong className="text-cyan-500">predictive analytics</strong> to anticipate trends, understand customer behavior, and optimize business decisions before they happen. Reduce risks and uncover opportunities with advanced data insights.
+          Harness the power of{" "}
+          <strong className="text-cyan-500">predictive analytics</strong> to
+          anticipate trends, understand customer behavior, and optimize business
+          decisions before they happen. Reduce risks and uncover opportunities
+          with advanced data insights.
         </p>
         <p>
-          Our solutions integrate <strong className="text-purple-500">machine learning models and AI algorithms</strong> to analyze historical data and provide actionable forecasts for sales, operations, and customer engagement.
+          Our solutions integrate{" "}
+          <strong className="text-purple-500">
+            machine learning models and AI algorithms
+          </strong>{" "}
+          to analyze historical data and provide actionable forecasts for sales,
+          operations, and customer engagement.
         </p>
         <p>
-          From demand forecasting to predictive maintenance, we deliver <strong className="text-blue-500">data-driven strategies</strong> that empower organizations to make smarter, faster decisions.
+          From demand forecasting to predictive maintenance, we deliver{" "}
+          <strong className="text-blue-500">data-driven strategies</strong> that
+          empower organizations to make smarter, faster decisions.
         </p>
         <p>
-          Collaborate with us to deploy <strong className="text-cyan-400">intelligent analytics systems</strong> that continuously improve and adapt, giving your business a competitive edge.
+          Collaborate with us to deploy{" "}
+          <strong className="text-cyan-400">intelligent analytics systems</strong>{" "}
+          that continuously improve and adapt, giving your business a competitive
+          edge.
         </p>
       </div>
 
       {/* Call-to-action Button */}
       <div className="mt-12 text-center">
-        <button className="px-8 py-4 bg-gradient-to-r from-cyan-400 to-purple-500 text-white text-lg font-semibold rounded-xl shadow-lg hover:scale-105 transition-transform duration-300">
-          Request a Demo
-        </button>
+        <Link href="/get-support/request-quote">
+          <button className="px-8 py-4 bg-gradient-to-r from-cyan-400 to-purple-500 text-white text-lg font-semibold rounded-xl shadow-lg hover:scale-105 transition-transform duration-300">
+            Request a Demo
+          </button>
+        </Link>
       </div>
     </div>
   );

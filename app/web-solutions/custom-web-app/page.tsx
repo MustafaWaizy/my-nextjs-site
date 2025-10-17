@@ -1,8 +1,15 @@
 "use client";
 
 import Image from "next/image";
+import { useRouter } from "next/navigation";
 
 export default function CustomWebAppPage() {
+  const router = useRouter();
+
+  const handleRequestClick = () => {
+    router.push("/get-support/request-quote");
+  };
+
   return (
     <div className="py-16 px-6 max-w-5xl mx-auto font-orbitron">
       {/* Page Title */}
@@ -43,7 +50,10 @@ export default function CustomWebAppPage() {
 
       {/* Call-to-action Button */}
       <div className="mt-12 text-center">
-        <button className="px-8 py-4 bg-gradient-to-r from-cyan-400 to-purple-500 text-white text-lg font-semibold rounded-xl shadow-lg hover:scale-105 transition-transform duration-300">
+        <button
+          onClick={handleRequestClick}
+          className="px-8 py-4 bg-gradient-to-r from-cyan-400 to-purple-500 text-white text-lg font-semibold rounded-xl shadow-lg hover:scale-105 transition-transform duration-300"
+        >
           Request a Demo
         </button>
       </div>

@@ -1,8 +1,15 @@
 "use client";
 
 import Image from "next/image";
+import { useRouter } from "next/navigation";
 
 export default function ITHelpDeskPage() {
+  const router = useRouter();
+
+  const handleRequestSupportClick = () => {
+    router.push("/get-support/contact"); // internal route
+  };
+
   return (
     <div className="py-16 px-6 max-w-5xl mx-auto font-orbitron">
       {/* Page Title */}
@@ -43,7 +50,10 @@ export default function ITHelpDeskPage() {
 
       {/* Call-to-action Button */}
       <div className="mt-12 text-center">
-        <button className="px-8 py-4 bg-gradient-to-r from-cyan-400 to-purple-500 text-white text-lg font-semibold rounded-xl shadow-lg hover:scale-105 transition-transform duration-300">
+        <button
+          onClick={handleRequestSupportClick}
+          className="px-8 py-4 bg-gradient-to-r from-cyan-400 to-purple-500 text-white text-lg font-semibold rounded-xl shadow-lg hover:scale-105 transition-transform duration-300"
+        >
           Request Support
         </button>
       </div>

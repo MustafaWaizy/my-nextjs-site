@@ -1,8 +1,15 @@
 "use client";
 
 import Image from "next/image";
+import { useRouter } from "next/navigation";
 
 export default function ClientPortalPage() {
+  const router = useRouter();
+
+  const handleAccessClick = () => {
+    router.push("/get-support/contact"); // internal route
+  };
+
   return (
     <div className="py-16 px-6 max-w-5xl mx-auto font-orbitron">
       {/* Page Title */}
@@ -25,25 +32,36 @@ export default function ClientPortalPage() {
       {/* Description Section */}
       <div className="space-y-8 text-gray-700 text-lg leading-relaxed">
         <p>
-          Access all your services and resources in one place with our <strong className="text-cyan-500">secure and intuitive client portal</strong>, designed for efficiency and ease-of-use.
+          Access all your services and resources in one place with our{" "}
+          <strong className="text-cyan-500">secure and intuitive client portal</strong>, designed for efficiency and ease-of-use.
         </p>
         <p>
-          The portal provides <strong className="text-purple-500">real-time updates, project tracking, document management, and support ticket submission</strong> so you can stay fully informed and in control.
+          The portal provides{" "}
+          <strong className="text-purple-500">real-time updates, project tracking, document management, and support ticket submission</strong>{" "}
+          so you can stay fully informed and in control.
         </p>
         <p>
-          Our AI-driven interface offers <strong className="text-blue-500">personalized dashboards, smart notifications, and actionable insights</strong> to help you make informed decisions quickly.
+          Our AI-driven interface offers{" "}
+          <strong className="text-blue-500">personalized dashboards, smart notifications, and actionable insights</strong>{" "}
+          to help you make informed decisions quickly.
         </p>
         <p>
-          With enterprise-grade <strong className="text-cyan-400">security and encryption</strong>, you can safely manage sensitive information, collaborate with teams, and monitor progress anytime, anywhere.
+          With enterprise-grade{" "}
+          <strong className="text-cyan-400">security and encryption</strong>, you can safely manage sensitive information, collaborate with teams, and monitor progress anytime, anywhere.
         </p>
         <p>
-          Partner with us to leverage our <strong className="text-purple-400">advanced client portal solutions</strong> that enhance transparency, streamline communication, and optimize your workflow.
+          Partner with us to leverage our{" "}
+          <strong className="text-purple-400">advanced client portal solutions</strong>{" "}
+          that enhance transparency, streamline communication, and optimize your workflow.
         </p>
       </div>
 
       {/* Call-to-action Button */}
       <div className="mt-12 text-center">
-        <button className="px-8 py-4 bg-gradient-to-r from-cyan-400 to-purple-500 text-white text-lg font-semibold rounded-xl shadow-lg hover:scale-105 transition-transform duration-300">
+        <button
+          onClick={handleAccessClick}
+          className="px-8 py-4 bg-gradient-to-r from-cyan-400 to-purple-500 text-white text-lg font-semibold rounded-xl shadow-lg hover:scale-105 transition-transform duration-300"
+        >
           Access Your Portal
         </button>
       </div>

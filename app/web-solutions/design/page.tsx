@@ -1,8 +1,15 @@
 "use client";
 
 import Image from "next/image";
+import { useRouter } from "next/navigation";
 
 export default function WebsiteDesignPage() {
+  const router = useRouter();
+
+  const handleRequestClick = () => {
+    router.push("/get-support/request-quote");
+  };
+
   return (
     <div className="py-16 px-6 max-w-5xl mx-auto font-orbitron">
       {/* Page Title */}
@@ -25,25 +32,41 @@ export default function WebsiteDesignPage() {
       {/* Description Section */}
       <div className="space-y-8 text-gray-700 text-lg leading-relaxed">
         <p>
-          Deliver visually stunning, highly functional websites with our <strong className="text-cyan-500">website design & development</strong> services. We combine creativity, usability, and technology to create an engaging user experience.
+          Deliver visually stunning, highly functional websites with our{" "}
+          <strong className="text-cyan-500">
+            website design & development
+          </strong>{" "}
+          services. We combine creativity, usability, and technology to create an engaging user experience.
         </p>
         <p>
-          Our team leverages <strong className="text-purple-500">modern UI/UX principles</strong> and responsive design frameworks to ensure your website performs flawlessly across all devices and platforms.
+          Our team leverages{" "}
+          <strong className="text-purple-500">modern UI/UX principles</strong>{" "}
+          and responsive design frameworks to ensure your website performs flawlessly across all devices and platforms.
         </p>
         <p>
-          We integrate interactive features, custom graphics, and intuitive navigation to make your website not just attractive but <strong className="text-blue-500">highly user-friendly and conversion-oriented</strong>.
+          We integrate interactive features, custom graphics, and intuitive navigation to make your website not just attractive but{" "}
+          <strong className="text-blue-500">
+            highly user-friendly and conversion-oriented
+          </strong>.
         </p>
         <p>
-          With seamless back-end development, content management system integration, and optimized workflows, your website will be <strong className="text-cyan-400">efficient, scalable, and secure</strong>.
+          With seamless back-end development, content management system integration, and optimized workflows, your website will be{" "}
+          <strong className="text-cyan-400">efficient, scalable, and secure</strong>.
         </p>
         <p>
-          Partner with us to create websites that are <strong className="text-purple-400">AI-ready, engaging, and built to grow with your business</strong>.
+          Partner with us to create websites that are{" "}
+          <strong className="text-purple-400">
+            AI-ready, engaging, and built to grow with your business
+          </strong>.
         </p>
       </div>
 
       {/* Call-to-action Button */}
       <div className="mt-12 text-center">
-        <button className="px-8 py-4 bg-gradient-to-r from-cyan-400 to-purple-500 text-white text-lg font-semibold rounded-xl shadow-lg hover:scale-105 transition-transform duration-300">
+        <button
+          onClick={handleRequestClick}
+          className="px-8 py-4 bg-gradient-to-r from-cyan-400 to-purple-500 text-white text-lg font-semibold rounded-xl shadow-lg hover:scale-105 transition-transform duration-300"
+        >
           Request a Demo
         </button>
       </div>
