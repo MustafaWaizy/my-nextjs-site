@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import Image from "next/image";
 
 export default function AIChatbotsPage() {
@@ -43,9 +44,11 @@ export default function AIChatbotsPage() {
 
       {/* Call-to-action Button */}
       <div className="mt-12 text-center">
-        <button className="px-8 py-4 bg-gradient-to-r from-cyan-400 to-purple-500 text-white text-lg font-semibold rounded-xl shadow-lg hover:scale-105 transition-transform duration-300">
-          Request a Demo
-        </button>
+        <Link href="/get-support/request-quote">
+          <button className="px-8 py-4 bg-gradient-to-r from-cyan-400 to-purple-500 text-white text-lg font-semibold rounded-xl shadow-lg hover:scale-105 transition-transform duration-300">
+            Request a Demo
+          </button>
+        </Link>
       </div>
     </div>
   );
