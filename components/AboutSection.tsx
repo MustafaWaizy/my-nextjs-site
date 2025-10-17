@@ -52,25 +52,8 @@ export default function AboutSection() {
     });
   }, [floatControls]);
 
-  const isMobile = typeof window !== "undefined" ? window.innerWidth < 768 : false;
-
   const getPosition = (index: number) => {
-    if (isMobile) {
-      // Mobile: stack vertically, one at a time
-      if (selected !== null) {
-        return {
-          x: 0,
-          scale: index === selected ? 1.2 : 0.85,
-          rotateY: 0,
-          zIndex: index === selected ? 100 : 5,
-          y: index === selected ? 0 : (index - selected) * 120,
-        };
-      }
-      return { x: 0, scale: 0.9, rotateY: 0, zIndex: 5, y: index * 20 };
-    }
-
-    // Desktop: existing overlapping carousel
-    const screenWidth = 256;
+    const screenWidth = 200; // smaller for mobile scaling
     const halfWidth = screenWidth / 2;
     const offsets = [-halfWidth * 2, -halfWidth, 0, halfWidth, halfWidth * 2];
     const scales = [0.75, 0.9, 1, 0.9, 0.75];
@@ -79,15 +62,15 @@ export default function AboutSection() {
 
     if (selected !== null) {
       const diff = index - selected;
-      if (diff === 0) return { x: 0, scale: 1.4, rotateY: 0, zIndex: 100 };
-      const slideOffset = diff < 0 ? -300 + diff * 20 : 300 + diff * 20;
-      return { x: slideOffset, scale: 0.85, rotateY: diff * 15, zIndex: 5 };
+      if (diff === 0) return { x: 0, scale: 1.3, rotateY: 0, zIndex: 50 };
+      if (Math.abs(diff) === 1) return { x: diff * 150, scale: 0.95, rotateY: diff * 15, zIndex: 10 };
+      return { x: diff * 180, scale: 0.85, rotateY: diff * 20, zIndex: 5 };
     }
 
     if (hovered !== null) {
       const diff = index - hovered;
       if (diff === 0) return { x: 0, scale: 1.3, rotateY: 0, zIndex: 50 };
-      if (Math.abs(diff) === 1) return { x: diff * 160, scale: 0.95, rotateY: diff * 15, zIndex: 10 };
+      if (Math.abs(diff) === 1) return { x: diff * 150, scale: 0.95, rotateY: diff * 15, zIndex: 10 };
       return { x: diff * 180, scale: 0.85, rotateY: diff * 20, zIndex: 5 };
     }
 
@@ -110,7 +93,7 @@ export default function AboutSection() {
   }, []);
 
   return (
-    <section className="py-16 md:py-32 relative overflow-hidden bg-white">
+    <section className="py-24 md:py-32 relative overflow-hidden bg-white">
       {/* Neural Network Background */}
       {nodes.length > 0 && (
         <svg className="absolute inset-0 w-full h-full z-0">
@@ -168,7 +151,7 @@ export default function AboutSection() {
 
       <div
         ref={containerRef}
-        className={`max-w-full md:max-w-[75%] mx-auto flex ${isMobile ? "flex-col items-center" : "justify-center items-center"} relative min-h-[650px] perspective-1000`}
+        className="max-w-full md:max-w-[75%] mx-auto flex justify-center items-center relative min-h-[650px] perspective-1000 px-4 md:px-0"
         onMouseMove={handleMouseMove}
         onMouseLeave={handleMouseLeave}
       >
@@ -184,20 +167,19 @@ export default function AboutSection() {
           return (
             <motion.div
               key={screen.id}
-              className={`absolute md:absolute w-64 md:w-64 h-[500px] md:h-[600px] rounded-3xl flex flex-col overflow-hidden cursor-pointer shadow-lg border border-black mb-6 md:mb-0`}
+              className="absolute w-52 md:w-64 h-[500px] md:h-[600px] rounded-3xl flex flex-col overflow-hidden cursor-pointer shadow-lg border border-black"
               animate={{
                 x: pos.x,
-                y: pos.y ?? 0,
                 scale: pos.scale,
                 rotateY: pos.rotateY,
               }}
               transition={{ type: "spring", stiffness: 70, damping: 20 }}
-              onHoverStart={() => !isMobile && setHovered(i)}
-              onHoverEnd={() => !isMobile && setHovered(null)}
+              onHoverStart={() => setHovered(i)}
+              onHoverEnd={() => setHovered(null)}
               onClick={() => setSelected(selected === i ? null : i)}
               style={{
-                rotateX: !isMobile && hovered === i ? tiltX : 0,
-                rotateY: !isMobile && hovered === i ? tiltY : pos.rotateY,
+                rotateX: hovered === i ? tiltX : 0,
+                rotateY: hovered === i ? tiltY : pos.rotateY,
                 boxShadow: sideShadow,
                 zIndex: pos.zIndex,
               }}
