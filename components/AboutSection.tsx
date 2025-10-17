@@ -52,30 +52,24 @@ export default function AboutSection() {
     });
   }, [floatControls]);
 
-  const [isMobile, setIsMobile] = useState(false);
-
-  useEffect(() => {
-    const checkMobile = () => setIsMobile(window.innerWidth < 768);
-    checkMobile();
-    window.addEventListener("resize", checkMobile);
-    return () => window.removeEventListener("resize", checkMobile);
-  }, []);
+  const isMobile = typeof window !== "undefined" ? window.innerWidth < 768 : false;
 
   const getPosition = (index: number) => {
     if (isMobile) {
+      // Mobile: stack vertically, one at a time
       if (selected !== null) {
         return {
-          x: (index - selected) * 270, // spacing for swipe
+          x: 0,
           scale: index === selected ? 1.2 : 0.85,
           rotateY: 0,
           zIndex: index === selected ? 100 : 5,
-          y: 0,
+          y: index === selected ? 0 : (index - selected) * 120,
         };
       }
-      return { x: index * 270, scale: 0.9, rotateY: 0, zIndex: 5, y: 0 };
+      return { x: 0, scale: 0.9, rotateY: 0, zIndex: 5, y: index * 20 };
     }
 
-    // Desktop carousel
+    // Desktop: existing overlapping carousel
     const screenWidth = 256;
     const halfWidth = screenWidth / 2;
     const offsets = [-halfWidth * 2, -halfWidth, 0, halfWidth, halfWidth * 2];
@@ -172,13 +166,11 @@ export default function AboutSection() {
         </svg>
       )}
 
-      <motion.div
+      <div
         ref={containerRef}
-        className={`max-w-full md:max-w-[75%] mx-auto flex ${isMobile ? "overflow-x-auto px-4" : "justify-center items-center"} relative min-h-[650px] perspective-1000`}
+        className={`max-w-full md:max-w-[75%] mx-auto flex ${isMobile ? "flex-col items-center" : "justify-center items-center"} relative min-h-[650px] perspective-1000`}
         onMouseMove={handleMouseMove}
         onMouseLeave={handleMouseLeave}
-        drag={isMobile ? "x" : false}
-        dragConstraints={{ left: -screens.length * 270 + 270, right: 0 }}
       >
         {screens.map((screen, i) => {
           const pos = getPosition(i);
@@ -192,7 +184,7 @@ export default function AboutSection() {
           return (
             <motion.div
               key={screen.id}
-              className={`w-64 md:w-64 h-[500px] md:h-[600px] rounded-3xl flex flex-col overflow-hidden cursor-pointer shadow-lg border border-black mb-6 md:mb-0 flex-shrink-0`}
+              className={`absolute md:absolute w-64 md:w-64 h-[500px] md:h-[600px] rounded-3xl flex flex-col overflow-hidden cursor-pointer shadow-lg border border-black mb-6 md:mb-0`}
               animate={{
                 x: pos.x,
                 y: pos.y ?? 0,
@@ -276,7 +268,7 @@ export default function AboutSection() {
             </motion.div>
           );
         })}
-      </motion.div>
+      </div>
     </section>
   );
 }
