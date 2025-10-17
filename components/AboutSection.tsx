@@ -52,7 +52,30 @@ export default function AboutSection() {
     });
   }, [floatControls]);
 
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const checkMobile = () => setIsMobile(window.innerWidth < 768);
+    checkMobile();
+    window.addEventListener("resize", checkMobile);
+    return () => window.removeEventListener("resize", checkMobile);
+  }, []);
+
   const getPosition = (index: number) => {
+    if (isMobile) {
+      if (selected !== null) {
+        return {
+          x: (index - selected) * 270, // spacing for swipe
+          scale: index === selected ? 1.2 : 0.85,
+          rotateY: 0,
+          zIndex: index === selected ? 100 : 5,
+          y: 0,
+        };
+      }
+      return { x: index * 270, scale: 0.9, rotateY: 0, zIndex: 5, y: 0 };
+    }
+
+    // Desktop carousel
     const screenWidth = 256;
     const halfWidth = screenWidth / 2;
     const offsets = [-halfWidth * 2, -halfWidth, 0, halfWidth, halfWidth * 2];
@@ -93,7 +116,7 @@ export default function AboutSection() {
   }, []);
 
   return (
-    <section className="py-32 relative overflow-hidden bg-white">
+    <section className="py-16 md:py-32 relative overflow-hidden bg-white">
       {/* Neural Network Background */}
       {nodes.length > 0 && (
         <svg className="absolute inset-0 w-full h-full z-0">
@@ -149,11 +172,13 @@ export default function AboutSection() {
         </svg>
       )}
 
-      <div
+      <motion.div
         ref={containerRef}
-        className="max-w-[75%] mx-auto flex justify-center items-center relative min-h-[650px] perspective-1000"
+        className={`max-w-full md:max-w-[75%] mx-auto flex ${isMobile ? "overflow-x-auto px-4" : "justify-center items-center"} relative min-h-[650px] perspective-1000`}
         onMouseMove={handleMouseMove}
         onMouseLeave={handleMouseLeave}
+        drag={isMobile ? "x" : false}
+        dragConstraints={{ left: -screens.length * 270 + 270, right: 0 }}
       >
         {screens.map((screen, i) => {
           const pos = getPosition(i);
@@ -167,19 +192,20 @@ export default function AboutSection() {
           return (
             <motion.div
               key={screen.id}
-              className="absolute w-64 h-[600px] rounded-3xl flex flex-col overflow-hidden cursor-pointer shadow-lg border border-black"
+              className={`w-64 md:w-64 h-[500px] md:h-[600px] rounded-3xl flex flex-col overflow-hidden cursor-pointer shadow-lg border border-black mb-6 md:mb-0 flex-shrink-0`}
               animate={{
                 x: pos.x,
+                y: pos.y ?? 0,
                 scale: pos.scale,
-                rotateY: pos.rotateY, // number only
+                rotateY: pos.rotateY,
               }}
               transition={{ type: "spring", stiffness: 70, damping: 20 }}
-              onHoverStart={() => setHovered(i)}
-              onHoverEnd={() => setHovered(null)}
+              onHoverStart={() => !isMobile && setHovered(i)}
+              onHoverEnd={() => !isMobile && setHovered(null)}
               onClick={() => setSelected(selected === i ? null : i)}
               style={{
-                rotateX: hovered === i ? tiltX : 0, // MotionValue
-                rotateY: hovered === i ? tiltY : pos.rotateY, // MotionValue
+                rotateX: !isMobile && hovered === i ? tiltX : 0,
+                rotateY: !isMobile && hovered === i ? tiltY : pos.rotateY,
                 boxShadow: sideShadow,
                 zIndex: pos.zIndex,
               }}
@@ -213,9 +239,7 @@ export default function AboutSection() {
                     ))}
                 </div>
 
-                <div
-                  className={`relative z-20 text-center flex flex-col justify-center items-center h-full px-4 ${montserrat.className}`}
-                >
+                <div className={`relative z-20 text-center flex flex-col justify-center items-center h-full px-4 ${montserrat.className}`}>
                   <div>
                     <span
                       className="bg-purple-100 rounded-sm text-2xl font-extrabold text-blue-600"
@@ -252,7 +276,7 @@ export default function AboutSection() {
             </motion.div>
           );
         })}
-      </div>
+      </motion.div>
     </section>
   );
 }
