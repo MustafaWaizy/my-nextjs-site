@@ -13,4 +13,3 @@ export default function ChatWrapper() {
     </>
   );
 }
-ChatToggleButton.tsx

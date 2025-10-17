@@ -50,7 +50,12 @@ export default function Features() {
         "0 0 15px 5px rgba(255,255,255,0.7)",
         "0 0 5px 2px rgba(255,255,255,0.2)",
       ],
-      transition: { duration: 2, repeat: Infinity, repeatType: "mirror", ease: "easeInOut" },
+      transition: {
+        duration: 2,
+        repeat: Infinity,
+        repeatType: "loop" as "loop",  // Type-safe
+        ease: "easeInOut" as "easeInOut", // Type-safe
+      },
     },
   };
 

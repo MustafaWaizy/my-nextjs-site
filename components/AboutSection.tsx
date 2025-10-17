@@ -1,10 +1,12 @@
-import { motion, useAnimation } from "framer-motion";
+"use client";
+
+import { motion, useMotionValue, useTransform, useAnimation } from "framer-motion";
 import { useState, useEffect, useRef } from "react";
-import { Montserrat } from "next/font/google";
+import { Montserrat } from "next/font/google"; // Primary font
 
 const montserrat = Montserrat({
   subsets: ["latin"],
-  weight: ["700", "900"],
+  weight: ["700", "900"], // Bold for headings
 });
 
 interface Node {
@@ -23,28 +25,23 @@ export default function AboutSection() {
   ];
 
   const [hovered, setHovered] = useState<number | null>(null);
-  const [selectedCard, setSelectedCard] = useState<number | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
 
-  // ==================== Responsive scaling ====================
-  const [screenScale, setScreenScale] = useState(1);
-  const [isMobile, setIsMobile] = useState(false);
+  const mouseX = useMotionValue(0);
+  const mouseY = useMotionValue(0);
 
-  useEffect(() => {
-    const updateScale = () => {
-      const width = window.innerWidth;
-      if (width <= 480) setScreenScale(0.55);
-      else if (width <= 768) setScreenScale(0.7);
-      else if (width <= 1024) setScreenScale(0.85);
-      else setScreenScale(1);
-      setIsMobile(width <= 1024);
-    };
-    updateScale();
-    window.addEventListener("resize", updateScale);
-    return () => window.removeEventListener("resize", updateScale);
-  }, []);
+  const handleMouseMove = (e: React.MouseEvent) => {
+    if (!containerRef.current) return;
+    const { left, top, width, height } = containerRef.current.getBoundingClientRect();
+    mouseX.set((e.clientX - left) / width - 0.5);
+    mouseY.set((e.clientY - top) / height - 0.5);
+  };
 
-  // ==================== Floating animation ====================
+  const handleMouseLeave = () => {
+    mouseX.set(0);
+    mouseY.set(0);
+  };
+
   const floatControls = useAnimation();
   useEffect(() => {
     floatControls.start({
@@ -54,7 +51,24 @@ export default function AboutSection() {
     });
   }, [floatControls]);
 
-  // ==================== Node background ====================
+  const getPosition = (index: number) => {
+    const screenWidth = 256;
+    const halfWidth = screenWidth / 2;
+    const offsets = [-halfWidth * 2, -halfWidth, 0, halfWidth, halfWidth * 2];
+    const scales = [0.75, 0.9, 1, 0.9, 0.75];
+    const rotations = [-20, -10, 0, 10, 20];
+    const zIndexes = [1, 2, 5, 2, 1];
+
+    if (hovered !== null) {
+      const diff = index - hovered;
+      if (diff === 0) return { x: 0, scale: 1.3, rotateY: 0, zIndex: 50 };
+      if (Math.abs(diff) === 1) return { x: diff * 160, scale: 0.95, rotateY: diff * 15, zIndex: 10 };
+      return { x: diff * 180, scale: 0.85, rotateY: diff * 20, zIndex: 5 };
+    }
+
+    return { x: offsets[index], scale: scales[index], rotateY: rotations[index], zIndex: zIndexes[index] };
+  };
+
   const [nodes, setNodes] = useState<Node[]>([]);
   useEffect(() => {
     const generateNodes = () => {
@@ -70,29 +84,9 @@ export default function AboutSection() {
     return () => clearInterval(interval);
   }, []);
 
-  // ==================== Card layout ====================
-  const getPosition = (index: number) => {
-    const screenWidth = 256;
-    const halfWidth = screenWidth / 2;
-    const offsets = [-halfWidth * 2, -halfWidth, 0, halfWidth, halfWidth * 2];
-    const scales = [0.75, 0.9, 1, 0.9, 0.75];
-    const rotations = [-20, -10, 0, 10, 20];
-    const zIndexes = [1, 2, 5, 2, 1];
-
-    if (hovered !== null) {
-      const diff = index - hovered;
-      if (diff === 0) return { x: 0, scale: 1.3, rotateY: 0, zIndex: 50 };
-      if (Math.abs(diff) === 1)
-        return { x: diff * 160, scale: 0.95, rotateY: diff * 15, zIndex: 10 };
-      return { x: diff * 180, scale: 0.85, rotateY: diff * 20, zIndex: 5 };
-    }
-
-    return { x: offsets[index], scale: scales[index], rotateY: rotations[index], zIndex: zIndexes[index] };
-  };
-
   return (
-    <section aria-label="about-section" className="py-32 relative overflow-hidden bg-white">
-      {/* ============ Neural network background ============ */}
+    <section className="py-32 relative overflow-hidden bg-white">
+      {/* Neural Network Background */}
       {nodes.length > 0 && (
         <svg className="absolute inset-0 w-full h-full z-0">
           {nodes.map((a, i) =>
@@ -113,7 +107,10 @@ export default function AboutSection() {
                     strokeWidth="1"
                     initial={{ opacity: 0 }}
                     animate={{ opacity: [0.2, 0.6, 0.2] }}
-                    transition={{ duration: Math.random() * 3 + 2, repeat: Infinity }}
+                    transition={{
+                      duration: Math.random() * 3 + 2,
+                      repeat: Infinity,
+                    }}
                   />
                 );
               }
@@ -135,61 +132,48 @@ export default function AboutSection() {
               r={n.size / 2}
               fill="url(#lineGradient)"
               animate={{ r: [n.size / 2, n.size, n.size / 2], rotate: [0, 360] }}
-              transition={{ duration: Math.random() * 3 + 2, repeat: Infinity }}
+              transition={{
+                duration: Math.random() * 3 + 2,
+                repeat: Infinity,
+              }}
             />
           ))}
         </svg>
       )}
 
-      {/* ============ 3D Card Container ============ */}
       <div
         ref={containerRef}
         className="max-w-[75%] mx-auto flex justify-center items-center relative min-h-[650px] perspective-1000"
-        style={{ transform: `scale(${screenScale})`, transformOrigin: "top center", transition: "transform 0.5s ease-in-out" }}
+        onMouseMove={handleMouseMove}
+        onMouseLeave={handleMouseLeave}
       >
         {screens.map((screen, i) => {
           const pos = getPosition(i);
-
-          // Desktop animation
-          const desktopAnimate = {
-            x: pos.x,
-            scale: pos.scale,
-            rotateY: pos.rotateY,
-            y: floatControls.y,
-            rotateZ: floatControls.rotateZ,
-            zIndex: pos.zIndex,
-          };
-
-          // Mobile behavior: focus spotlight
-          const mobileAnimate =
-            selectedCard === i
-              ? {
-                  x: 0,
-                  y: 0,
-                  scale: 1.6,
-                  zIndex: 200,
-                  position: "fixed",
-                  top: "50%",
-                  left: "50%",
-                  translateX: "-50%",
-                  translateY: "-50%",
-                }
-              : selectedCard !== null
-              ? { opacity: 0, zIndex: 0, scale: 0.8 }
-              : desktopAnimate;
+          const tiltX = useTransform(mouseY, [-0.5, 0.5], [5, -5]);
+          const tiltY = useTransform(mouseX, [-0.5, 0.5], [-5, 5]);
+          const sideShadow =
+            hovered !== null && i !== hovered
+              ? `0 25px 50px rgba(0,0,0,${0.05 + Math.abs(i - hovered) * 0.05})`
+              : "0 15px 30px rgba(0,0,0,0.05)";
 
           return (
             <motion.div
               key={screen.id}
-              className="absolute w-64 h-[600px] rounded-3xl flex flex-col overflow-hidden cursor-pointer shadow-lg border border-black bg-white"
-              animate={isMobile ? mobileAnimate : desktopAnimate}
+              className="absolute w-64 h-[600px] rounded-3xl flex flex-col overflow-hidden cursor-pointer shadow-lg border border-black"
+              initial={{
+                x: pos.x,
+                scale: pos.scale,
+                rotateY: pos.rotateY,
+              }}
+              animate={floatControls}
               transition={{ type: "spring", stiffness: 40, damping: 25 }}
-              onHoverStart={() => !isMobile && setHovered(i)}
-              onHoverEnd={() => !isMobile && setHovered(null)}
-              onClick={() => {
-                if (isMobile) {
-                  setSelectedCard(selectedCard === i ? null : i);
-                }
+              onHoverStart={() => setHovered(i)}
+              onHoverEnd={() => setHovered(null)}
+              style={{
+                zIndex: pos.zIndex,
+                rotateX: hovered === i ? tiltX : 0,
+                rotateY: hovered === i ? tiltY : pos.rotateY,
+                boxShadow: sideShadow,
               }}
             >
               {/* Top bar */}
@@ -197,12 +181,13 @@ export default function AboutSection() {
                 <div className="w-16 h-2 rounded-full bg-purple-400" />
               </div>
 
-              {/* Screen area */}
+              {/* Screen area with background */}
               <div className="relative flex-1 w-full overflow-hidden">
                 <div
                   className="absolute inset-0 w-full h-full z-0 bg-cover bg-center rounded-none"
                   style={{ backgroundImage: `url('${screen.bg}')` }}
                 />
+
                 <div className="absolute inset-0 flex flex-col justify-center items-center opacity-40 z-10">
                   {Array(3)
                     .fill(0)
@@ -211,25 +196,41 @@ export default function AboutSection() {
                         key={j}
                         className="h-2 w-4/5 rounded-full bg-cyan-400/40 mb-3"
                         animate={{ x: ["-100%", "100%"] }}
-                        transition={{ repeat: Infinity, duration: 3 + j * 0.7, ease: "linear" }}
+                        transition={{
+                          repeat: Infinity,
+                          duration: 3 + j * 0.7,
+                          ease: "linear",
+                        }}
                       />
                     ))}
                 </div>
 
-                {/* Card Content */}
-                <div className={`relative z-20 text-center flex flex-col justify-center items-center h-full px-4 ${montserrat.className}`}>
+                <div
+                  className={`relative z-20 text-center flex flex-col justify-center items-center h-full px-4 ${montserrat.className}`}
+                >
                   <div>
                     <span
                       className="bg-purple-100 rounded-sm text-2xl font-extrabold text-blue-600"
-                      style={{ display: "inline", padding: "0.06rem 0.28rem", WebkitBoxDecorationBreak: "clone", boxDecorationBreak: "clone" }}
+                      style={{
+                        display: "inline",
+                        padding: "0.06rem 0.28rem",
+                        WebkitBoxDecorationBreak: "clone",
+                        boxDecorationBreak: "clone",
+                      }}
                     >
                       {screen.heading}
                     </span>
                   </div>
+
                   <div className="mt-6">
                     <span
                       className="bg-purple-100 rounded-sm text-sm font-bold text-blue-600"
-                      style={{ display: "inline", padding: "0.04rem 0.24rem", WebkitBoxDecorationBreak: "clone", boxDecorationBreak: "clone" }}
+                      style={{
+                        display: "inline",
+                        padding: "0.04rem 0.24rem",
+                        WebkitBoxDecorationBreak: "clone",
+                        boxDecorationBreak: "clone",
+                      }}
                     >
                       {screen.description}
                     </span>
@@ -237,31 +238,12 @@ export default function AboutSection() {
                 </div>
               </div>
 
-              {/* Bottom bar */}
               <div className="h-14 bg-purple-400 flex items-center justify-center">
                 <div className="w-12 h-2 rounded-full bg-purple-400" />
               </div>
             </motion.div>
           );
         })}
-
-        {/* Overlay for focus mode */}
-        {isMobile && selectedCard !== null && (
-          <motion.div
-            className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[150]"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            onClick={() => setSelectedCard(null)}
-          >
-            <button
-              onClick={() => setSelectedCard(null)}
-              className="absolute top-6 right-6 bg-white/80 text-black px-3 py-2 rounded-full shadow-md text-sm font-bold"
-            >
-              ✕
-            </button>
-          </motion.div>
-        )}
       </div>
     </section>
   );

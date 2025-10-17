@@ -1,19 +1,19 @@
 "use client";
 import { FC, useEffect, useRef, useState } from "react";
 import {
-  PaperClipIcon,
-  PhotoIcon,
-  MicrophoneIcon,
-  ArrowUpCircleIcon,
-  FaceSmileIcon,
+  PaperClipIcon,   // Attachment
+  PhotoIcon,       // GIF placeholder
+  MicrophoneIcon,  // Voice
+  ArrowUpCircleIcon, // Send
+  FaceSmileIcon    // Emoji / Sticker
 } from "@heroicons/react/24/outline";
-import Picker from "emoji-picker-react";
+import Picker from "emoji-picker-react"; // modern emoji picker
 
 interface Message {
   from: "user" | "bot";
   text: string;
   timestamp: string;
-  suggestions?: { intent: string; text: string; visible?: boolean }[];
+  suggestions?: { intent: string; text: string }[];
 }
 
 interface ChatbotProps {
@@ -29,17 +29,9 @@ const Chatbot: FC<ChatbotProps> = ({ visible, onClose }) => {
   const [showTyping, setShowTyping] = useState(false);
   const [showGifPopup, setShowGifPopup] = useState(false);
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
-  const [isMobile, setIsMobile] = useState(false);
 
   const chatContainerRef = useRef<HTMLDivElement>(null);
   const emojiPickerRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    const checkMobile = () => setIsMobile(window.innerWidth <= 768);
-    checkMobile();
-    window.addEventListener("resize", checkMobile);
-    return () => window.removeEventListener("resize", checkMobile);
-  }, []);
 
   const formatTimestamp = (isoString: string) => {
     const date = new Date(isoString);
@@ -54,8 +46,7 @@ const Chatbot: FC<ChatbotProps> = ({ visible, onClose }) => {
     );
     processed = processed.replace(
       /([a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,})/g,
-      (email) =>
-        `<a href="mailto:${email}" class="text-blue-600 underline">${email}</a>`
+      (email) => `<a href="mailto:${email}" class="text-blue-600 underline">${email}</a>`
     );
     return processed;
   };
@@ -66,35 +57,31 @@ const Chatbot: FC<ChatbotProps> = ({ visible, onClose }) => {
     }
   };
 
-  const handleSuggestionClick = async (msgIndex: number, intent: string) => {
-    // ✅ Hide all suggestions for this bot message
-    setMessages((prev) =>
-      prev.map((m, i) =>
-        i === msgIndex
-          ? {
-              ...m,
-              suggestions: m.suggestions?.map((s) => ({ ...s, visible: false })),
-            }
-          : m
-      )
-    );
-
+  // ✅ Updated suggestion handler (skips input, shows bot reply directly)
+  const handleSuggestionClick = async (intent: string) => {
     const now = new Date().toISOString();
-    setMessages((prev) => [...prev, { from: "user", text: intent, timestamp: now }]);
-    setTyping(true);
 
+    // optional: show suggestion as user message
+    setMessages((prev) => [
+      ...prev,
+      { from: "user", text: intent, timestamp: now }
+    ]);
+
+    setTyping(true);
     try {
       const response = await fetch("http://127.0.0.1:8000/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ message: intent }),
       });
+
       const data = await response.json();
       const botResponse = data?.response || "[No response]";
       const botSuggestions = data?.suggestions || [];
+
       setMessages((prev) => [
         ...prev,
-        { from: "bot", text: botResponse, timestamp: new Date().toISOString(), suggestions: botSuggestions.map(s => ({ ...s, visible: true })) },
+        { from: "bot", text: botResponse, timestamp: new Date().toISOString(), suggestions: botSuggestions },
       ]);
       scrollToBottom();
     } catch {
@@ -112,6 +99,7 @@ const Chatbot: FC<ChatbotProps> = ({ visible, onClose }) => {
     if (!input.trim()) return;
     const now = new Date().toISOString();
     const userMessage = input;
+
     setMessages((prev) => [...prev, { from: "user", text: userMessage, timestamp: now }]);
     setInput("");
     scrollToBottom();
@@ -127,9 +115,10 @@ const Chatbot: FC<ChatbotProps> = ({ visible, onClose }) => {
       const data = await response.json();
       const botResponse = data?.response || "[No response]";
       const botSuggestions = data?.suggestions || [];
+
       setMessages((prev) => [
         ...prev,
-        { from: "bot", text: botResponse, timestamp: new Date().toISOString(), suggestions: botSuggestions.map(s => ({ ...s, visible: true })) },
+        { from: "bot", text: botResponse, timestamp: new Date().toISOString(), suggestions: botSuggestions },
       ]);
       scrollToBottom();
     } catch {
@@ -150,7 +139,7 @@ const Chatbot: FC<ChatbotProps> = ({ visible, onClose }) => {
         setMessages([
           {
             from: "bot",
-            text: `👋 Hi there, I'm <strong>LIHANA</strong> — your AI Assistant. Ask me anything, and I'll help you find the answer.`,
+            text: `Hi there, I'm LIHANA the Chatbot. I'm here to answer questions. Just ask me your question in simple sentence form.`,
             timestamp: new Date().toISOString(),
           },
         ]);
@@ -165,9 +154,13 @@ const Chatbot: FC<ChatbotProps> = ({ visible, onClose }) => {
     scrollToBottom();
   }, [messages]);
 
+  // Close emoji picker when clicking outside
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
-      if (emojiPickerRef.current && !emojiPickerRef.current.contains(event.target as Node)) {
+      if (
+        emojiPickerRef.current &&
+        !emojiPickerRef.current.contains(event.target as Node)
+      ) {
         setShowEmojiPicker(false);
       }
     }
@@ -183,19 +176,14 @@ const Chatbot: FC<ChatbotProps> = ({ visible, onClose }) => {
 
   return (
     <div
-      className={`fixed bg-white shadow-2xl flex flex-col z-50 transform transition-transform duration-500 ease-out
-        ${isMobile
-          ? "inset-0 w-full h-full rounded-none"
-          : "top-16 right-8 w-[500px] h-[85vh] rounded-2xl"} 
-        ${visible ? "translate-x-0 opacity-100" : "translate-x-full opacity-0"}`}
+      className={`fixed top-16 right-8 w-[500px] min-w-[500px] max-w-[500px] h-[85vh] min-h-[85vh] bg-white rounded-2xl shadow-2xl flex flex-col z-50
+              transform transition-transform duration-500 ease-out
+              ${visible ? "translate-x-0 opacity-100" : "translate-x-full opacity-0"}`}
     >
       {/* Header */}
-      <div className="p-3 bg-gradient-to-r from-cyan-600 via-blue-700 to-purple-700 text-white font-bold flex justify-between items-center rounded-t-2xl">
+      <div className="p-3 bg-blue-600 text-white font-bold flex justify-between items-center rounded-t-2xl">
         <span>ASK LIHANA</span>
-        <button
-          onClick={onClose}
-          className="text-white hover:text-gray-300 text-xl leading-none"
-        >
+        <button onClick={onClose} className="text-white hover:text-gray-300 text-xl leading-none">
           &times;
         </button>
       </div>
@@ -225,32 +213,31 @@ const Chatbot: FC<ChatbotProps> = ({ visible, onClose }) => {
                     <div>{msg.text}</div>
                   )}
                 </div>
-
-                {/* Animated Suggestion Chips */}
-                {msg.from === "bot" && msg.suggestions?.length > 0 && (
-                  <div className="mt-2 flex flex-wrap gap-2">
-                    {msg.suggestions.map(
-                      (s, i) =>
-                        s.visible !== false && (
-                          <button
-                            key={i}
-                            onClick={() => handleSuggestionClick(index, s.intent)}
-                            className="suggestion-chip animate-fade-slide"
-                            style={{ animationDelay: `${i * 0.1}s` }}
-                          >
-                            {s.text}
-                          </button>
-                        )
-                    )}
-                  </div>
-                )}
-
                 <div className="text-gray-400 mt-1">{formatTimestamp(msg.timestamp)}</div>
               </div>
             </div>
+
+            {/* Suggestions */}
+            {msg.from === "bot" && msg.suggestions?.length > 0 && index === messages.length - 1 && (
+              <div className="pl-14">
+                <div className="text-blue-700 font-semibold mb-1">Did you mean one of the following?</div>
+                <div className="flex flex-col gap-2">
+                  {msg.suggestions.map((s, i) => (
+                    <button
+                      key={i}
+                      onClick={() => handleSuggestionClick(s.intent)}
+                      className="px-3 py-1 border border-blue-600 text-blue-600 rounded hover:bg-blue-50 transition text-left"
+                    >
+                      {s.text}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
         ))}
 
+        {/* Typing indicator */}
         {(typing || showTyping) && (
           <div className="text-gray-400 italic flex items-center gap-1">
             LIHANA is typing
@@ -261,7 +248,7 @@ const Chatbot: FC<ChatbotProps> = ({ visible, onClose }) => {
         )}
       </div>
 
-      {/* Input */}
+      {/* Input + icons */}
       <div className="p-3 border-t flex flex-col gap-2 relative">
         <div className="w-full bg-gray-100 rounded-xl px-3 py-3 flex flex-col gap-1 relative">
           <div className="flex items-center gap-2 relative w-full">
@@ -273,6 +260,7 @@ const Chatbot: FC<ChatbotProps> = ({ visible, onClose }) => {
               placeholder="Ask a question..."
             />
 
+            {/* Voice button */}
             <button
               className="absolute right-10 w-8 h-8 flex items-center justify-center bg-gray-200 hover:bg-gray-300 rounded-full transition"
               title="Voice"
@@ -281,6 +269,7 @@ const Chatbot: FC<ChatbotProps> = ({ visible, onClose }) => {
               <MicrophoneIcon className="w-4 h-4 text-gray-700" />
             </button>
 
+            {/* Send button */}
             <button
               onClick={sendMessage}
               className="w-8 h-8 flex items-center justify-center bg-blue-600 hover:bg-blue-700 rounded-full transition"
@@ -290,7 +279,9 @@ const Chatbot: FC<ChatbotProps> = ({ visible, onClose }) => {
             </button>
           </div>
 
+          {/* Icons row */}
           <div className="flex items-center gap-2 mt-1">
+            {/* Emoji button */}
             <button
               className="w-6 h-6 flex items-center justify-center hover:bg-gray-200 rounded-full transition"
               title="Emoji"
@@ -299,6 +290,7 @@ const Chatbot: FC<ChatbotProps> = ({ visible, onClose }) => {
               <FaceSmileIcon className="w-5 h-5 text-gray-700" />
             </button>
 
+            {/* Attachment */}
             <input
               type="file"
               id="attachmentInput"
@@ -321,6 +313,7 @@ const Chatbot: FC<ChatbotProps> = ({ visible, onClose }) => {
               <PaperClipIcon className="w-5 h-5 text-gray-700" />
             </button>
 
+            {/* GIF */}
             <button
               className="w-6 h-6 flex items-center justify-center hover:bg-gray-200 rounded-full transition"
               title="GIF"
@@ -330,6 +323,7 @@ const Chatbot: FC<ChatbotProps> = ({ visible, onClose }) => {
             </button>
           </div>
 
+          {/* Emoji Picker */}
           {showEmojiPicker && (
             <div ref={emojiPickerRef} className="absolute bottom-14 left-3 z-50">
               <Picker
@@ -340,56 +334,20 @@ const Chatbot: FC<ChatbotProps> = ({ visible, onClose }) => {
                 width={300}
                 height={400}
                 searchDisabled={false}
-                skinTonePalette={true}
+                
               />
             </div>
           )}
         </div>
 
+        {/* Privacy Policy */}
         <div className="w-full mt-2 px-3 py-2 text-xs text-gray-500 bg-gray-50 rounded text-left font-sans leading-snug shadow-inner">
-          <strong>Privacy Policy:</strong>
-          <br />
-          We value your privacy and keep all your chat data safe and secure.
-          <br />
-          Your messages are only used to help us improve the chatbot experience.
-          <br />
+          <strong>Privacy Policy:</strong><br />
+          We value your privacy and keep all your chat data safe and secure.<br />
+          Your messages are only used to help us improve the chatbot experience.<br />
           Please avoid sharing sensitive personal information here.
         </div>
       </div>
-
-      <style jsx>{`
-        .suggestion-chip {
-          background: linear-gradient(90deg, #e0f2fe, #f5f3ff);
-          color: #1e3a8a;
-          font-weight: 500;
-          font-size: 0.8rem;
-          padding: 6px 12px;
-          border-radius: 20px;
-          border: 1px solid #e2e8f0;
-          cursor: pointer;
-          transition: all 0.25s ease;
-          box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
-        }
-        .suggestion-chip:hover {
-          background: linear-gradient(90deg, #dbeafe, #ede9fe);
-          transform: translateY(-2px);
-          box-shadow: 0 3px 6px rgba(0, 0, 0, 0.08);
-        }
-        @keyframes fadeSlideIn {
-          0% { opacity: 0; transform: translateY(10px); }
-          100% { opacity: 1; transform: translateY(0); }
-        }
-        .animate-fade-slide {
-          animation: fadeSlideIn 0.35s ease forwards;
-        }
-        @keyframes fadeSlideOut {
-          0% { opacity: 1; transform: translateY(0); }
-          100% { opacity: 0; transform: translateY(-10px); }
-        }
-        .animate-fade-slide-out {
-          animation: fadeSlideOut 0.25s ease forwards;
-        }
-      `}</style>
     </div>
   );
 };
