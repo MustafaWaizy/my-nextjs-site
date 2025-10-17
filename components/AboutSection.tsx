@@ -92,6 +92,14 @@ export default function AboutSection() {
     return () => clearInterval(interval);
   }, []);
 
+  // handle tap outside to reset selected
+  const handleContainerClick = (e: React.MouseEvent) => {
+    // only clear selection if click is NOT on a card
+    if (!(e.target as HTMLElement).closest(".card")) {
+      setSelected(null);
+    }
+  };
+
   return (
     <section className="py-24 md:py-32 relative overflow-hidden bg-white">
       {/* Neural Network Background */}
@@ -151,6 +159,7 @@ export default function AboutSection() {
 
       <div
         ref={containerRef}
+        onClick={handleContainerClick}
         className="max-w-full md:max-w-[75%] mx-auto flex justify-center items-center relative min-h-[650px] perspective-1000 px-4 md:px-0"
         onMouseMove={handleMouseMove}
         onMouseLeave={handleMouseLeave}
@@ -160,14 +169,14 @@ export default function AboutSection() {
           const tiltX = useTransform(mouseY, [-0.5, 0.5], [5, -5]);
           const tiltY = useTransform(mouseX, [-0.5, 0.5], [-5, 5]);
           const sideShadow =
-            (hovered !== null && i !== hovered) || (selected !== null && i !== selected)
+            (hovered !== null && i !== hovered) || (selected !== null && i === selected)
               ? `0 25px 50px rgba(0,0,0,${0.05 + Math.abs(i - (hovered ?? selected!)) * 0.05})`
               : "0 15px 30px rgba(0,0,0,0.05)";
 
           return (
             <motion.div
               key={screen.id}
-              className="absolute w-52 md:w-64 h-[500px] md:h-[600px] rounded-3xl flex flex-col overflow-hidden cursor-pointer shadow-lg border border-black"
+              className="card absolute w-52 md:w-64 h-[500px] md:h-[600px] rounded-3xl flex flex-col overflow-hidden cursor-pointer shadow-lg border border-black"
               animate={{
                 x: pos.x,
                 scale: pos.scale,
@@ -176,7 +185,10 @@ export default function AboutSection() {
               transition={{ type: "spring", stiffness: 70, damping: 20 }}
               onHoverStart={() => setHovered(i)}
               onHoverEnd={() => setHovered(null)}
-              onClick={() => setSelected(selected === i ? null : i)}
+              onClick={(e) => {
+                e.stopPropagation(); // prevent container click from clearing
+                setSelected(selected === i ? null : i);
+              }}
               style={{
                 rotateX: hovered === i ? tiltX : 0,
                 rotateY: hovered === i ? tiltY : pos.rotateY,
