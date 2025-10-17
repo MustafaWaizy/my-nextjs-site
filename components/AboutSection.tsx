@@ -2,11 +2,11 @@
 
 import { motion, useMotionValue, useTransform, useAnimation } from "framer-motion";
 import { useState, useEffect, useRef } from "react";
-import { Montserrat } from "next/font/google"; // Primary font
+import { Montserrat } from "next/font/google";
 
 const montserrat = Montserrat({
   subsets: ["latin"],
-  weight: ["700", "900"], // Bold for headings
+  weight: ["700", "900"],
 });
 
 interface Node {
@@ -25,6 +25,7 @@ export default function AboutSection() {
   ];
 
   const [hovered, setHovered] = useState<number | null>(null);
+  const [selected, setSelected] = useState<number | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
 
   const mouseX = useMotionValue(0);
@@ -58,6 +59,13 @@ export default function AboutSection() {
     const scales = [0.75, 0.9, 1, 0.9, 0.75];
     const rotations = [-20, -10, 0, 10, 20];
     const zIndexes = [1, 2, 5, 2, 1];
+
+    if (selected !== null) {
+      const diff = index - selected;
+      if (diff === 0) return { x: 0, scale: 1.4, rotateY: 0, zIndex: 100 };
+      const slideOffset = diff < 0 ? -300 + diff * 20 : 300 + diff * 20;
+      return { x: slideOffset, scale: 0.85, rotateY: diff * 15, zIndex: 5 };
+    }
 
     if (hovered !== null) {
       const diff = index - hovered;
@@ -152,28 +160,28 @@ export default function AboutSection() {
           const tiltX = useTransform(mouseY, [-0.5, 0.5], [5, -5]);
           const tiltY = useTransform(mouseX, [-0.5, 0.5], [-5, 5]);
           const sideShadow =
-            hovered !== null && i !== hovered
-              ? `0 25px 50px rgba(0,0,0,${0.05 + Math.abs(i - hovered) * 0.05})`
+            (hovered !== null && i !== hovered) || (selected !== null && i !== selected)
+              ? `0 25px 50px rgba(0,0,0,${0.05 + Math.abs(i - (hovered ?? selected!)) * 0.05})`
               : "0 15px 30px rgba(0,0,0,0.05)";
 
           return (
             <motion.div
               key={screen.id}
               className="absolute w-64 h-[600px] rounded-3xl flex flex-col overflow-hidden cursor-pointer shadow-lg border border-black"
-              initial={{
+              animate={{
                 x: pos.x,
                 scale: pos.scale,
-                rotateY: pos.rotateY,
+                rotateY: pos.rotateY, // number only
               }}
-              animate={floatControls}
-              transition={{ type: "spring", stiffness: 40, damping: 25 }}
+              transition={{ type: "spring", stiffness: 70, damping: 20 }}
               onHoverStart={() => setHovered(i)}
               onHoverEnd={() => setHovered(null)}
+              onClick={() => setSelected(selected === i ? null : i)}
               style={{
-                zIndex: pos.zIndex,
-                rotateX: hovered === i ? tiltX : 0,
-                rotateY: hovered === i ? tiltY : pos.rotateY,
+                rotateX: hovered === i ? tiltX : 0, // MotionValue
+                rotateY: hovered === i ? tiltY : pos.rotateY, // MotionValue
                 boxShadow: sideShadow,
+                zIndex: pos.zIndex,
               }}
             >
               {/* Top bar */}
