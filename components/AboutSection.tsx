@@ -53,7 +53,7 @@ export default function AboutSection() {
   }, [floatControls]);
 
   const getPosition = (index: number) => {
-    const screenWidth = 200; // smaller for mobile scaling
+    const screenWidth = 200;
     const halfWidth = screenWidth / 2;
     const offsets = [-halfWidth * 2, -halfWidth, 0, halfWidth, halfWidth * 2];
     const scales = [0.75, 0.9, 1, 0.9, 0.75];
@@ -92,17 +92,26 @@ export default function AboutSection() {
     return () => clearInterval(interval);
   }, []);
 
-  // handle tap outside to reset selected
-  const handleContainerClick = (e: React.MouseEvent) => {
-    // only clear selection if click is NOT on a card
-    if (!(e.target as HTMLElement).closest(".card")) {
-      setSelected(null);
-    }
-  };
+  // ✅ Mobile-friendly tap/click outside listener
+  useEffect(() => {
+    const handleTapOutside = (e: MouseEvent | TouchEvent) => {
+      const target = e.target as HTMLElement;
+      if (!target.closest(".card")) {
+        setSelected(null);
+      }
+    };
+
+    document.addEventListener("mousedown", handleTapOutside);
+    document.addEventListener("touchstart", handleTapOutside);
+
+    return () => {
+      document.removeEventListener("mousedown", handleTapOutside);
+      document.removeEventListener("touchstart", handleTapOutside);
+    };
+  }, []);
 
   return (
     <section className="py-24 md:py-32 relative overflow-hidden bg-white">
-      {/* Neural Network Background */}
       {nodes.length > 0 && (
         <svg className="absolute inset-0 w-full h-full z-0">
           {nodes.map((a, i) =>
@@ -159,7 +168,6 @@ export default function AboutSection() {
 
       <div
         ref={containerRef}
-        onClick={handleContainerClick}
         className="max-w-full md:max-w-[75%] mx-auto flex justify-center items-center relative min-h-[650px] perspective-1000 px-4 md:px-0"
         onMouseMove={handleMouseMove}
         onMouseLeave={handleMouseLeave}
@@ -186,7 +194,7 @@ export default function AboutSection() {
               onHoverStart={() => setHovered(i)}
               onHoverEnd={() => setHovered(null)}
               onClick={(e) => {
-                e.stopPropagation(); // prevent container click from clearing
+                e.stopPropagation();
                 setSelected(selected === i ? null : i);
               }}
               style={{
@@ -196,12 +204,10 @@ export default function AboutSection() {
                 zIndex: pos.zIndex,
               }}
             >
-              {/* Top bar */}
               <div className="h-6 bg-purple-300 flex items-center px-3">
                 <div className="w-16 h-2 rounded-full bg-purple-400" />
               </div>
 
-              {/* Screen area with background */}
               <div className="relative flex-1 w-full overflow-hidden">
                 <div
                   className="absolute inset-0 w-full h-full z-0 bg-cover bg-center rounded-none"
