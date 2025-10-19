@@ -3,12 +3,13 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
 import ReCAPTCHA from "react-google-recaptcha";
-
-// 👇 import the background
 import NeuralNetworkBackground from "./NeuralNetworkBackground";
 
 export default function ContactFormWizard() {
   const [step, setStep] = useState(1);
+  const [submitted, setSubmitted] = useState(false); // ✅ NEW — to toggle success message
+  const [submitting, setSubmitting] = useState(false); // ✅ Optional — to disable during submit
+
   const [formData, setFormData] = useState({
     firstName: "",
     lastName: "",
@@ -49,6 +50,7 @@ export default function ContactFormWizard() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
     if (!formData.consent) {
       alert("⚠️ Please consent to data processing before submitting.");
       return;
@@ -59,37 +61,99 @@ export default function ContactFormWizard() {
       return;
     }
 
+    setSubmitting(true);
+
     const payload = new FormData();
     Object.entries(formData).forEach(([key, value]) => {
       if (key === "attachments" && value instanceof FileList) {
-        Array.from(value).forEach((file) =>
-          payload.append("attachments", file)
-        );
+        Array.from(value).forEach((file) => payload.append("attachments", file));
       } else {
         payload.append(key, String(value));
       }
     });
+
+    payload.append("g-recaptcha-response", captchaValue || "");
 
     const res = await fetch("/api/contact", {
       method: "POST",
       body: payload,
     });
 
+    setSubmitting(false);
+
     if (res.ok) {
-      alert(
-        `✅ Thank you ${formData.firstName}! Our AI team has logged your request for ${formData.service}.`
-      );
+      setSubmitted(true); // ✅ show success screen instead of form
     } else {
       alert("❌ Something went wrong. Please try again.");
     }
   };
 
+  // ✅ Success screen
+  if (submitted) {
+    return (
+      <div className="relative min-h-screen flex items-center justify-center mt-[64px]">
+        <NeuralNetworkBackground />
+        <motion.div
+          initial={{ opacity: 0, y: 30 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
+          className="relative z-10 bg-white shadow-2xl rounded-2xl p-10 max-w-lg text-center"
+        >
+          <motion.div
+            initial={{ scale: 0 }}
+            animate={{ scale: 1 }}
+            transition={{ type: "spring", stiffness: 120 }}
+            className="flex justify-center mb-6"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              className="h-16 w-16 text-green-500"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+              strokeWidth={2}
+            >
+              <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+            </svg>
+          </motion.div>
+          <h2 className="text-2xl font-bold text-gray-800 mb-2">
+            Thank you, {formData.firstName}!
+          </h2>
+          <p className="text-gray-600 mb-6">
+            Your request for <strong>{formData.service}</strong> has been successfully submitted.
+            Our team will contact you shortly.
+          </p>
+          <button
+            onClick={() => {
+              setSubmitted(false);
+              setStep(1);
+              setFormData({
+                firstName: "",
+                lastName: "",
+                email: "",
+                phone: "",
+                company: "",
+                service: "",
+                details: "",
+                contactMethod: "",
+                deliveryMethod: "",
+                attachments: null,
+                consent: false,
+              });
+            }}
+            className="px-6 py-2 bg-gradient-to-r from-cyan-500 to-purple-600 text-white rounded-lg shadow-md hover:shadow-lg transition"
+          >
+            Submit Another Request
+          </button>
+        </motion.div>
+      </div>
+    );
+  }
+
   return (
     <div className="relative min-h-screen flex items-start justify-center mt-[64px]">
-      {/* 🔥 Background component */}
       <NeuralNetworkBackground />
 
-      {/* Form stays above background */}
       <motion.div
         initial={{ opacity: 0, y: 30 }}
         animate={{ opacity: 1, y: 0 }}
@@ -116,7 +180,7 @@ export default function ContactFormWizard() {
           />
         </div>
 
-        {/* Form Steps */}
+        {/* Multi-step Form */}
         <form onSubmit={handleSubmit} className="space-y-6">
           {/* Step 1 */}
           {step === 1 && (
@@ -246,7 +310,7 @@ export default function ContactFormWizard() {
               {/* ✅ reCAPTCHA */}
               <div className="mt-4">
                 <ReCAPTCHA
-                  sitekey="YOUR_RECAPTCHA_SITE_KEY"
+                  sitekey="6Lev8O0rAAAAAESgfW6JY7lV9yhQ07_FJrHf6uPr"
                   onChange={handleCaptchaChange}
                 />
                 {!captchaValue && (
@@ -281,10 +345,15 @@ export default function ContactFormWizard() {
               <motion.button
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
+                disabled={submitting}
                 type="submit"
-                className="ml-auto px-6 py-2 bg-gradient-to-r from-cyan-500 to-purple-600 text-white rounded-lg shadow-md hover:shadow-lg transition"
+                className={`ml-auto px-6 py-2 text-white rounded-lg shadow-md transition ${
+                  submitting
+                    ? "bg-gray-400 cursor-not-allowed"
+                    : "bg-gradient-to-r from-cyan-500 to-purple-600 hover:shadow-lg"
+                }`}
               >
-                Submit
+                {submitting ? "Submitting..." : "Submit"}
               </motion.button>
             )}
           </div>

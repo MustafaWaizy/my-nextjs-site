@@ -2,12 +2,18 @@
 
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import ReCAPTCHA from "react-google-recaptcha";
+import NeuralNetworkBackground from "../../../../LinorAI/components/NeuralNetworkBackground";
 
 export default function RequestQuotePage() {
   const [step, setStep] = useState(1);
+  const [submitted, setSubmitted] = useState(false); // ✅ show success screen
+  const [submitting, setSubmitting] = useState(false); // optional disable submit
   const [showServices, setShowServices] = useState(false);
   const [showBudget, setShowBudget] = useState(false);
   const [showTimeline, setShowTimeline] = useState(false);
+  const [recaptchaToken, setRecaptchaToken] = useState<string | null>(null);
+  const [attachments, setAttachments] = useState<{ name: string; data: string }[]>([]);
 
   const [formData, setFormData] = useState({
     name: "",
@@ -54,6 +60,7 @@ export default function RequestQuotePage() {
     "Other",
   ];
 
+  // ---------------- Handlers ----------------
   const handleNext = () => {
     if (step < steps) setStep(step + 1);
   };
@@ -63,7 +70,8 @@ export default function RequestQuotePage() {
   };
 
   const handleChange = (e: any) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
+    const { name, value } = e.target;
+    setFormData({ ...formData, [name]: value });
   };
 
   const toggleService = (service: string) => {
@@ -75,7 +83,7 @@ export default function RequestQuotePage() {
     } else {
       setFormData({ ...formData, services: [...formData.services, service] });
     }
-    setShowServices(false); // Close dropdown after selection
+    setShowServices(false);
   };
 
   const removeService = (service: string) => {
@@ -85,9 +93,119 @@ export default function RequestQuotePage() {
     });
   };
 
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (!e.target.files) return;
+    const filesArray = Array.from(e.target.files);
+    const base64Files = await Promise.all(
+      filesArray.map(
+        (file) =>
+          new Promise<{ name: string; data: string }>((resolve, reject) => {
+            const reader = new FileReader();
+            reader.readAsDataURL(file);
+            reader.onload = () => {
+              const base64Data = (reader.result as string).split(",")[1];
+              resolve({ name: file.name, data: base64Data });
+            };
+            reader.onerror = (error) => reject(error);
+          })
+      )
+    );
+    setAttachments(base64Files);
+  };
+
+  const handleSubmit = async () => {
+    if (!recaptchaToken) {
+      alert("Please verify that you are not a robot.");
+      return;
+    }
+
+    setSubmitting(true);
+
+    try {
+      const res = await fetch("/api/request-quote", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ...formData, recaptchaToken, attachments }),
+      });
+
+      if (res.ok) {
+        setSubmitted(true); // ✅ show success screen
+      } else {
+        alert("Failed to submit your request. Please try again later.");
+      }
+    } catch (error) {
+      console.error(error);
+      alert("An error occurred while submitting the request.");
+    }
+
+    setSubmitting(false);
+  };
+
+  // ---------------- Success Screen ----------------
+  if (submitted) {
+    return (
+      <div className="relative min-h-screen flex items-center justify-center mt-[64px]">
+        <NeuralNetworkBackground />
+        <motion.div
+          initial={{ opacity: 0, y: 30 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
+          className="relative z-10 bg-white shadow-2xl rounded-2xl p-10 max-w-lg text-center"
+        >
+          <motion.div
+            initial={{ scale: 0 }}
+            animate={{ scale: 1 }}
+            transition={{ type: "spring", stiffness: 120 }}
+            className="flex justify-center mb-6"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              className="h-16 w-16 text-green-500"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+              strokeWidth={2}
+            >
+              <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+            </svg>
+          </motion.div>
+          <h2 className="text-2xl font-bold text-gray-800 mb-2">
+            Thank you, {formData.name}!
+          </h2>
+          <p className="text-gray-600 mb-6">
+            Your request for <strong>{formData.services.join(", ")}</strong> has been successfully submitted.
+            Our team will contact you shortly.
+          </p>
+          <button
+            onClick={() => {
+              setSubmitted(false);
+              setStep(1);
+              setFormData({
+                name: "",
+                email: "",
+                mobile: "",
+                services: [],
+                customService: "",
+                vision: "",
+                budget: "",
+                customBudget: "",
+                timeline: "",
+                customTimeline: "",
+              });
+              setAttachments([]);
+              setRecaptchaToken(null);
+            }}
+            className="px-6 py-2 bg-gradient-to-r from-cyan-500 to-purple-600 text-white rounded-lg shadow-md hover:shadow-lg transition"
+          >
+            Submit Another Request
+          </button>
+        </motion.div>
+      </div>
+    );
+  }
+
   return (
     <div className="py-16 px-6 max-w-3xl mx-auto font-orbitron">
-      {/* Title */}
       <h1 className="text-5xl sm:text-6xl font-extrabold mb-12 text-center bg-clip-text text-transparent bg-gradient-to-r from-cyan-400 via-purple-500 to-pink-500 drop-shadow-lg">
         Request a Quote
       </h1>
@@ -105,7 +223,7 @@ export default function RequestQuotePage() {
         </div>
       </div>
 
-      {/* Step-by-step Form */}
+      {/* Step Form Container */}
       <div className="relative min-h-[200px]">
         <AnimatePresence mode="wait">
           {/* Step 1: Name */}
@@ -119,7 +237,7 @@ export default function RequestQuotePage() {
               className="space-y-6"
             >
               <p className="text-lg text-gray-700">
-                 Hi there! What’s your{" "}
+                Hi there! What’s your{" "}
                 <strong className="text-cyan-500">full name</strong>?
               </p>
               <input
@@ -144,7 +262,7 @@ export default function RequestQuotePage() {
               className="space-y-6"
             >
               <p className="text-lg text-gray-700">
-                 Great! What’s the best{" "}
+                Great! What’s the best{" "}
                 <strong className="text-purple-500">email</strong> to reach
                 you?
               </p>
@@ -159,7 +277,7 @@ export default function RequestQuotePage() {
             </motion.div>
           )}
 
-          {/* Step 3: Mobile Number */}
+          {/* Step 3: Mobile */}
           {step === 3 && (
             <motion.div
               key="step3"
@@ -170,7 +288,7 @@ export default function RequestQuotePage() {
               className="space-y-6"
             >
               <p className="text-lg text-gray-700">
-                 What’s your <strong className="text-purple-500">mobile number</strong>?
+                What’s your <strong className="text-purple-500">mobile number</strong>?
               </p>
               <input
                 type="tel"
@@ -194,8 +312,7 @@ export default function RequestQuotePage() {
               className="space-y-6"
             >
               <p className="text-lg text-gray-700">
-                 Which <strong className="text-cyan-500">services</strong>{" "}
-                are you interested in?
+                Which <strong className="text-cyan-500">services</strong> are you interested in?
               </p>
 
               {/* Selected Services Tags */}
@@ -217,7 +334,7 @@ export default function RequestQuotePage() {
                 ))}
               </div>
 
-              {/* Services Dropdown Button */}
+              {/* Services Dropdown */}
               <button
                 type="button"
                 onClick={() => setShowServices(!showServices)}
@@ -268,7 +385,7 @@ export default function RequestQuotePage() {
             </motion.div>
           )}
 
-          {/* Step 5: Project Vision */}
+          {/* Step 5: Vision */}
           {step === 5 && (
             <motion.div
               key="step5"
@@ -279,8 +396,7 @@ export default function RequestQuotePage() {
               className="space-y-6"
             >
               <p className="text-lg text-gray-700">
-                 Tell us about your{" "}
-                <strong className="text-purple-500">project vision</strong>.
+                Tell us about your <strong className="text-purple-500">project vision</strong>.
               </p>
               <textarea
                 name="vision"
@@ -292,7 +408,7 @@ export default function RequestQuotePage() {
             </motion.div>
           )}
 
-          {/* Step 6: Budget & Timeline */}
+          {/* Step 6: Budget & Timeline + Attachments + reCAPTCHA */}
           {step === 6 && (
             <motion.div
               key="step6"
@@ -303,7 +419,7 @@ export default function RequestQuotePage() {
               className="space-y-6"
             >
               <p className="text-lg text-gray-700">
-                 Finally, what’s your <strong className="text-cyan-500">budget</strong> &{" "}
+                Finally, what’s your <strong className="text-cyan-500">budget</strong> &{" "}
                 <strong className="text-purple-500">timeline</strong>?
               </p>
 
@@ -339,7 +455,6 @@ export default function RequestQuotePage() {
                   </motion.div>
                 )}
               </AnimatePresence>
-
               {formData.budget === "Other" && (
                 <input
                   type="text"
@@ -383,7 +498,6 @@ export default function RequestQuotePage() {
                   </motion.div>
                 )}
               </AnimatePresence>
-
               {formData.timeline === "Other" && (
                 <input
                   type="text"
@@ -394,6 +508,25 @@ export default function RequestQuotePage() {
                   className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-cyan-500 mt-4"
                 />
               )}
+
+              {/* Attachments */}
+              <div className="mt-4">
+                <label className="block mb-2 text-gray-700">Attachments (optional)</label>
+                <input
+                  type="file"
+                  multiple
+                  onChange={handleFileChange}
+                  className="border rounded-lg p-2 w-full"
+                />
+              </div>
+
+              {/* reCAPTCHA */}
+              <div className="mt-6">
+                <ReCAPTCHA
+                  sitekey={process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY!}
+                  onChange={(token) => setRecaptchaToken(token)}
+                />
+              </div>
             </motion.div>
           )}
         </AnimatePresence>
@@ -420,10 +553,15 @@ export default function RequestQuotePage() {
           </button>
         ) : (
           <button
-            onClick={() => alert(" Quote request submitted!")}
-            className="px-8 py-3 bg-gradient-to-r from-green-400 to-blue-500 text-white font-semibold rounded-lg shadow-lg hover:scale-105 transition-transform"
+            onClick={handleSubmit}
+            disabled={submitting}
+            className={`px-8 py-3 text-white font-semibold rounded-lg shadow-lg hover:scale-105 transition-transform ${
+              submitting
+                ? "bg-gray-400 cursor-not-allowed"
+                : "bg-gradient-to-r from-green-400 to-blue-500"
+            }`}
           >
-            Submit Your Request
+            {submitting ? "Submitting..." : "Submit Your Request"}
           </button>
         )}
       </div>
