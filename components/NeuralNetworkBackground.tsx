@@ -2,9 +2,11 @@
 
 import { useState, useEffect } from "react";
 
+// Types
 type Node = { x: number; y: number; vx: number; vy: number; size: number };
 type Spark = { x1: number; y1: number; x2: number; y2: number; progress: number; speed: number };
 
+// Neural Network Background Component
 export default function NeuralNetworkBackground() {
   const [nodes, setNodes] = useState<Node[]>([]);
   const [sparks, setSparks] = useState<Spark[]>([]);
@@ -57,7 +59,7 @@ export default function NeuralNetworkBackground() {
           ]);
         }
       }
-    }, 500); // every 0.5s a spark is created
+    }, 500);
     return () => clearInterval(interval);
   }, [nodes]);
 
@@ -74,7 +76,7 @@ export default function NeuralNetworkBackground() {
   }, []);
 
   return (
-    <div className="fixed inset-0 w-screen h-screen bg-transparent overflow-hidden">
+    <div className="fixed inset-0 w-screen h-screen bg-white z-0 overflow-hidden">
       <svg className="absolute inset-0 w-full h-full">
         {/* Shimmering connections */}
         {nodes.map((a, i) =>

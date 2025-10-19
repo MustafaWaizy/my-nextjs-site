@@ -21,9 +21,10 @@
         "name": "next"
       }
     ],
-    "baseUrl": ".",         // Added for alias support
-    "paths": {              // Added for alias support
-      "@/*": ["./*"]
+    "baseUrl": ".",         
+    "paths": {              
+      "@/*": ["./*"],
+      "@components/*": ["components/*"]   // ✅ Added alias for components
     }
   },
   "include": [

@@ -7,8 +7,8 @@ import NeuralNetworkBackground from "./NeuralNetworkBackground";
 
 export default function ContactFormWizard() {
   const [step, setStep] = useState(1);
-  const [submitted, setSubmitted] = useState(false); // ✅ NEW — to toggle success message
-  const [submitting, setSubmitting] = useState(false); // ✅ Optional — to disable during submit
+  const [submitted, setSubmitted] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
 
   const [formData, setFormData] = useState({
     firstName: "",
@@ -27,11 +27,10 @@ export default function ContactFormWizard() {
   const [captchaValue, setCaptchaValue] = useState<string | null>(null);
 
   const handleChange = (
-    e: React.ChangeEvent<
-      HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
-    >
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
   ) => {
-    const { name, type, value, checked, files } = e.target as any;
+    const target = e.target as HTMLInputElement;
+    const { name, type, value, checked, files } = target;
     if (type === "checkbox") {
       setFormData({ ...formData, [name]: checked });
     } else if (type === "file") {
@@ -67,7 +66,7 @@ export default function ContactFormWizard() {
     Object.entries(formData).forEach(([key, value]) => {
       if (key === "attachments" && value instanceof FileList) {
         Array.from(value).forEach((file) => payload.append("attachments", file));
-      } else {
+      } else if (value !== null) {
         payload.append(key, String(value));
       }
     });
@@ -82,13 +81,12 @@ export default function ContactFormWizard() {
     setSubmitting(false);
 
     if (res.ok) {
-      setSubmitted(true); // ✅ show success screen instead of form
+      setSubmitted(true);
     } else {
       alert("❌ Something went wrong. Please try again.");
     }
   };
 
-  // ✅ Success screen
   if (submitted) {
     return (
       <div className="relative min-h-screen flex items-center justify-center mt-[64px]">
@@ -160,7 +158,6 @@ export default function ContactFormWizard() {
         transition={{ duration: 0.5 }}
         className="relative z-10 max-w-2xl w-full bg-white shadow-2xl rounded-2xl p-8"
       >
-        {/* Title + Subtitle */}
         <h1 className="text-2xl font-extrabold text-left mb-2 bg-gradient-to-r from-cyan-500 to-purple-600 bg-clip-text text-transparent">
           Get in Touch!
         </h1>
@@ -168,7 +165,6 @@ export default function ContactFormWizard() {
           Tell us how we can help, and we’ll reach out
         </p>
 
-        {/* Progress Bar */}
         <div className="w-full bg-gray-200 rounded-full h-2 mb-6">
           <motion.div
             className="bg-gradient-to-r from-cyan-500 to-purple-600 h-2 rounded-full"
@@ -180,21 +176,23 @@ export default function ContactFormWizard() {
           />
         </div>
 
-        {/* Multi-step Form */}
         <form onSubmit={handleSubmit} className="space-y-6">
-          {/* Step 1 */}
           {step === 1 && (
             <div>
               <h2 className="text-xl font-bold mb-4">Step 1: Basic Info</h2>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <label htmlFor="firstName" className="sr-only">First Name</label>
                 <input
+                  id="firstName"
                   name="firstName"
                   placeholder="First Name *"
                   onChange={handleChange}
                   required
                   className="w-full border rounded-lg px-4 py-3 focus:ring-2 focus:ring-cyan-500 outline-none"
                 />
+                <label htmlFor="lastName" className="sr-only">Last Name</label>
                 <input
+                  id="lastName"
                   name="lastName"
                   placeholder="Last Name *"
                   onChange={handleChange}
@@ -202,7 +200,9 @@ export default function ContactFormWizard() {
                   className="w-full border rounded-lg px-4 py-3 focus:ring-2 focus:ring-cyan-500 outline-none"
                 />
               </div>
+              <label htmlFor="email" className="sr-only">Email</label>
               <input
+                id="email"
                 type="email"
                 name="email"
                 placeholder="Email *"
@@ -210,7 +210,9 @@ export default function ContactFormWizard() {
                 required
                 className="w-full border mt-4 rounded-lg px-4 py-3 focus:ring-2 focus:ring-cyan-500 outline-none"
               />
+              <label htmlFor="phone" className="sr-only">Phone</label>
               <input
+                id="phone"
                 type="tel"
                 name="phone"
                 placeholder="Phone"
@@ -220,17 +222,20 @@ export default function ContactFormWizard() {
             </div>
           )}
 
-          {/* Step 2 */}
           {step === 2 && (
             <div>
               <h2 className="text-xl font-bold mb-4">Step 2: Business Context</h2>
+              <label htmlFor="company" className="sr-only">Company</label>
               <input
+                id="company"
                 name="company"
                 placeholder="Company / Organization"
                 onChange={handleChange}
                 className="w-full border rounded-lg px-4 py-3 focus:ring-2 focus:ring-cyan-500 outline-none"
               />
+              <label htmlFor="service" className="sr-only">Service</label>
               <select
+                id="service"
                 name="service"
                 onChange={handleChange}
                 required
@@ -247,18 +252,21 @@ export default function ContactFormWizard() {
             </div>
           )}
 
-          {/* Step 3 */}
           {step === 3 && (
             <div>
               <h2 className="text-xl font-bold mb-4">Step 3: Project Details</h2>
+              <label htmlFor="details" className="sr-only">Details</label>
               <textarea
+                id="details"
                 name="details"
                 placeholder="Tell us more about your request..."
                 rows={4}
                 onChange={handleChange}
                 className="w-full border rounded-lg px-4 py-3 focus:ring-2 focus:ring-cyan-500 outline-none"
               ></textarea>
+              <label htmlFor="attachments" className="sr-only">Attachments</label>
               <input
+                id="attachments"
                 type="file"
                 name="attachments"
                 multiple
@@ -268,11 +276,12 @@ export default function ContactFormWizard() {
             </div>
           )}
 
-          {/* Step 4 */}
           {step === 4 && (
             <div>
               <h2 className="text-xl font-bold mb-4">Step 4: Preferences</h2>
+              <label htmlFor="contactMethod" className="sr-only">Contact Method</label>
               <select
+                id="contactMethod"
                 name="contactMethod"
                 onChange={handleChange}
                 required
@@ -282,7 +291,9 @@ export default function ContactFormWizard() {
                 <option>Email</option>
                 <option>Phone</option>
               </select>
+              <label htmlFor="deliveryMethod" className="sr-only">Delivery Method</label>
               <select
+                id="deliveryMethod"
                 name="deliveryMethod"
                 onChange={handleChange}
                 required
@@ -293,8 +304,9 @@ export default function ContactFormWizard() {
                 <option>Onsite</option>
                 <option>No Preference</option>
               </select>
-              <label className="flex items-center space-x-2 mt-4 text-sm text-gray-700">
+              <label htmlFor="consent" className="flex items-center space-x-2 mt-4 text-sm text-gray-700">
                 <input
+                  id="consent"
                   type="checkbox"
                   name="consent"
                   onChange={handleChange}
@@ -302,12 +314,10 @@ export default function ContactFormWizard() {
                   className="h-5 w-5 text-cyan-500"
                 />
                 <span>
-                  I consent to LinorAI securely processing my information for the
-                  purpose of this request.
+                  I consent to LinorAI securely processing my information for the purpose of this request.
                 </span>
               </label>
 
-              {/* ✅ reCAPTCHA */}
               <div className="mt-4">
                 <ReCAPTCHA
                   sitekey="6Lev8O0rAAAAAESgfW6JY7lV9yhQ07_FJrHf6uPr"
@@ -322,7 +332,6 @@ export default function ContactFormWizard() {
             </div>
           )}
 
-          {/* Navigation Buttons */}
           <div className="flex justify-between">
             {step > 1 && (
               <button
