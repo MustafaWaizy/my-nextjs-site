@@ -1,9 +1,11 @@
+// app/api/contact/route.ts
 import { NextResponse } from "next/server";
 import nodemailer from "nodemailer";
 
 export async function POST(req: Request) {
   try {
     const formData = await req.formData();
+
     const firstName = formData.get("firstName");
     const lastName = formData.get("lastName");
     const email = formData.get("email");
@@ -15,10 +17,9 @@ export async function POST(req: Request) {
     const deliveryMethod = formData.get("deliveryMethod");
     const recaptchaToken = formData.get("g-recaptcha-response") as string;
 
-    // 🧾 Extract attached files
     const files = formData.getAll("attachments") as File[];
 
-    // Convert files to nodemailer attachments
+    // ✅ Convert files for nodemailer
     const attachments = await Promise.all(
       files.map(async (file) => ({
         filename: file.name,
@@ -26,12 +27,18 @@ export async function POST(req: Request) {
       }))
     );
 
-    // ✅ Server-side reCAPTCHA verification
+    // ✅ reCAPTCHA Verification
     const secretKey = process.env.RECAPTCHA_SECRET_KEY;
-    if (!secretKey) throw new Error("reCAPTCHA secret key is not set");
+    if (!secretKey) {
+      console.error("❌ Missing RECAPTCHA_SECRET_KEY");
+      return NextResponse.json(
+        { success: false, message: "Server misconfiguration" },
+        { status: 500 }
+      );
+    }
 
     const recaptchaRes = await fetch(
-      `https://www.google.com/recaptcha/api/siteverify`,
+      "https://www.google.com/recaptcha/api/siteverify",
       {
         method: "POST",
         headers: { "Content-Type": "application/x-www-form-urlencoded" },
@@ -40,27 +47,36 @@ export async function POST(req: Request) {
     );
 
     const recaptchaJson = await recaptchaRes.json();
-
     if (!recaptchaJson.success) {
+      console.error("❌ reCAPTCHA verification failed:", recaptchaJson);
       return NextResponse.json(
         { success: false, message: "reCAPTCHA verification failed" },
         { status: 400 }
       );
     }
 
-    // ✅ Configure Nodemailer transport
+    // ✅ Nodemailer transport
+    const gmailPassword = process.env.GMAIL_APP_PASSWORD;
+    if (!gmailPassword) {
+      console.error("❌ Missing GMAIL_APP_PASSWORD");
+      return NextResponse.json(
+        { success: false, message: "Server misconfiguration" },
+        { status: 500 }
+      );
+    }
+
     const transporter = nodemailer.createTransport({
       service: "Gmail",
       auth: {
-        user: "info.lihana@gmail.com", // your email
-        pass: process.env.GMAIL_APP_PASSWORD!, // your Gmail app password
+        user: "info.lihana@gmail.com",
+        pass: gmailPassword,
       },
     });
 
     // 📩 Prepare email
     const mailOptions = {
       from: `"Website Contact Form" <info.lihana@gmail.com>`,
-      to: "info.lihana@gmail.com", // receiver email
+      to: "info.lihana@gmail.com",
       subject: `New contact form submission from ${firstName} ${lastName}`,
       text: `
 Name: ${firstName} ${lastName}
@@ -72,15 +88,16 @@ Details: ${details}
 Preferred Contact: ${contactMethod}
 Delivery Method: ${deliveryMethod}
       `,
-      attachments, // 🧩 now attached files will be sent
+      attachments,
     };
 
-    // ✅ Send the email
     await transporter.sendMail(mailOptions);
-
     return NextResponse.json({ success: true });
-  } catch (error) {
-    console.error("❌ Error sending email:", error);
-    return NextResponse.json({ success: false }, { status: 500 });
+  } catch (error: any) {
+    console.error("❌ Error sending email:", error.message, error.stack);
+    return NextResponse.json(
+      { success: false, message: "Internal Server Error", error: error.message },
+      { status: 500 }
+    );
   }
 }
