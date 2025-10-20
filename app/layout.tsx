@@ -1,13 +1,22 @@
 import "./globals.css";
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
+import { Inter, Poppins } from "next/font/google";
 
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
 import ChatWrapper from "../components/ChatWrapper";
 import Preloader from "../components/Preloader";
 
+// Load Inter (existing)
 const inter = Inter({ subsets: ["latin"] });
+
+// Load Poppins (new)
+const poppins = Poppins({
+  subsets: ["latin"],
+  weight: ["300", "400", "500", "600", "700"],
+  variable: "--font-poppins",
+  display: "swap",
+});
 
 export const metadata: Metadata = {
   title: "My Website",
@@ -25,7 +34,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en">
+    <html lang="en" className={poppins.variable}>
       <body className={`${inter.className} bg-gray-50 text-gray-900 relative`}>
         {/* Preloader overlays everything for 5–8s */}
         <Preloader />

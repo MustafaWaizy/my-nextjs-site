@@ -3,9 +3,14 @@
 @tailwind utilities;
 
 /* =========================
-   Reset
+   Global Font Setup
 ========================= */
-html, body {
+:root {
+  --font-poppins: "Poppins", system-ui, sans-serif;
+}
+
+body {
+  @apply font-poppins text-gray-900 bg-gray-50;
   margin: 0;
   padding: 0;
 }
@@ -18,9 +23,20 @@ html, body {
   40% { transform: scale(1); }
 }
 
-.animate-bounceDelay1 { animation: bounceDelay 1.4s infinite; animation-delay: 0s; }
-.animate-bounceDelay2 { animation: bounceDelay 1.4s infinite; animation-delay: 0.2s; }
-.animate-bounceDelay3 { animation: bounceDelay 1.4s infinite; animation-delay: 0.4s; }
+.animate-bounceDelay1 {
+  animation: bounceDelay 1.4s infinite;
+  animation-delay: 0s;
+}
+
+.animate-bounceDelay2 {
+  animation: bounceDelay 1.4s infinite;
+  animation-delay: 0.2s;
+}
+
+.animate-bounceDelay3 {
+  animation: bounceDelay 1.4s infinite;
+  animation-delay: 0.4s;
+}
 
 /* =========================
    Pulsing Glow Animation
@@ -110,6 +126,3 @@ html, body {
    JS-based screenScale handles responsive scaling
 ========================= */
 /* No CSS scaling needed anymore */
-
-
-
