@@ -24,6 +24,15 @@ body {
 }
 
 /* =========================
+   Navbar Menu Items Fix
+========================= */
+.navbar, .menu-item, .dropdown-item {
+  @apply whitespace-nowrap;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* =========================
    Chatbot Typing Dots
 ========================= */
 @keyframes bounceDelay {

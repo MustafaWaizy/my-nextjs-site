@@ -35,7 +35,9 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" className={poppins.variable}>
-      <body className={`${poppins.variable} font-poppins bg-gray-50 text-gray-900 relative`}>
+      <body
+        className={`${poppins.variable} font-poppins bg-gray-50 text-gray-900 relative antialiased`}
+      >
         {/* Preloader overlays everything for 5–8s */}
         <Preloader />
 

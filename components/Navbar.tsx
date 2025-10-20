@@ -149,7 +149,6 @@ export default function Navbar() {
           </button>
         </div>
       </div>
-
       {/* Mobile Contact Info Panel */}
       <AnimatePresence>
         {showContactInfo && (
@@ -219,8 +218,8 @@ export default function Navbar() {
           </button>
 
           {/* Desktop Menu */}
-          <div className="hidden md:flex items-center ml-[80px]">
-            <div className="flex space-x-[25px] text-[18px]">
+          <div className="hidden md:flex items-center ml-[80px] overflow-x-auto flex-nowrap">
+            <div className="flex space-x-[25px] text-[18px] whitespace-nowrap">
               <Link
                 href="/"
                 onClick={closeMenus}
@@ -235,14 +234,14 @@ export default function Navbar() {
               {menuItems.map((menu) => (
                 <div
                   key={menu.key}
-                  className="relative group"
+                  className="relative group flex-shrink-0"
                   onMouseEnter={() => setActiveDropdown(menu.key)}
                   onMouseLeave={() => setActiveDropdown(null)}
                 >
                   <button className="relative hover:text-cyan-500 transition-colors duration-300
                     after:content-[''] after:absolute after:w-0 after:h-[2px] after:bg-gradient-to-r after:from-cyan-400 after:to-purple-500
                     after:left-0 after:bottom-[-4px] after:transition-all after:duration-300 hover:after:w-full
-                    font-poppins mac-font-smoothing"
+                    font-poppins mac-font-smoothing whitespace-nowrap"
                   >
                     {menu.title}
                   </button>
@@ -266,7 +265,7 @@ export default function Navbar() {
                             className="block px-4 py-2 rounded-lg transition-all duration-300
                                        hover:bg-gradient-to-r hover:from-cyan-400 hover:to-purple-500
                                        hover:text-white hover:shadow-[0_0_15px_rgba(59,130,246,0.6)]
-                                       font-poppins mac-font-smoothing text-[16px]"
+                                       font-poppins mac-font-smoothing text-[16px] whitespace-nowrap"
                           >
                             {link.label}
                           </Link>
