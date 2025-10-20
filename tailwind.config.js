@@ -8,7 +8,8 @@ module.exports = {
   theme: {
     extend: {
       fontFamily: {
-        poppins: ["var(--font-poppins)", "system-ui", "sans-serif"],
+        poppins: ["var(--font-poppins)", "system-ui", "sans-serif"], // global Poppins
+        inter: ["Inter", "sans-serif"], // for chat messages
       },
     },
   },
