@@ -12,6 +12,13 @@
 body {
   font-family: var(--font-poppins);
   @apply text-gray-900 bg-gray-50;
+
+  /* Cross-platform font smoothing */
+  -webkit-font-smoothing: antialiased; /* macOS */
+  -moz-osx-font-smoothing: grayscale;  /* macOS Firefox */
+  -moz-font-smoothing: auto;           /* fallback for Firefox */
+  -ms-font-smoothing: auto;            /* Windows fallback */
+
   margin: 0;
   padding: 0;
 }

@@ -104,7 +104,6 @@ export default function Navbar() {
 
   return (
     <nav className="sticky top-0 z-50 w-full font-poppins backdrop-blur-sm bg-white/80 shadow-lg">
-
       {/* Top Gradient Info Bar - Desktop Only */}
       <div className="hidden md:flex bg-gradient-to-r from-cyan-600 via-blue-700 to-purple-700 h-12 flex-col sm:flex-row items-center justify-center sm:space-x-12 text-sm text-white rounded-full mb-1 px-2 sm:px-0">
         <div className="flex items-center space-x-2">
@@ -129,15 +128,12 @@ export default function Navbar() {
 
       {/* Mobile Top Bar - Sticky */}
       <div className="flex md:hidden justify-between items-center px-4 py-2 bg-gradient-to-r from-cyan-600 via-blue-700 to-purple-700 text-white sticky top-0 z-50">
-        {/* Contact Info Button - Left */}
         <button
           onClick={() => setShowContactInfo(!showContactInfo)}
           className="text-sm font-medium px-4 py-2 rounded-full border border-white/30 hover:bg-white/10 transition"
         >
           Contact Info
         </button>
-
-        {/* Top Right Icons */}
         <div className="flex items-center space-x-3">
           <Link href="https://facebook.com" target="_blank">
             <Facebook className="w-5 h-5 text-white" />
@@ -192,7 +188,6 @@ export default function Navbar() {
               <Image src="/logo.png" alt="Logo" width={180} height={60} className="object-contain" />
             </Link>
           </motion.div>
-
           {/* Mobile Search Input */}
           <AnimatePresence>
             {showSearch && (
@@ -231,7 +226,8 @@ export default function Navbar() {
                 onClick={closeMenus}
                 className="relative hover:text-cyan-500 transition-colors duration-300
                            after:content-[''] after:absolute after:w-0 after:h-[2px] after:bg-gradient-to-r after:from-cyan-400 after:to-purple-500
-                           after:left-0 after:bottom-[-4px] after:transition-all after:duration-300 hover:after:w-full"
+                           after:left-0 after:bottom-[-4px] after:transition-all after:duration-300 hover:after:w-full
+                           font-poppins mac-font-smoothing"
               >
                 Home
               </Link>
@@ -245,7 +241,8 @@ export default function Navbar() {
                 >
                   <button className="relative hover:text-cyan-500 transition-colors duration-300
                     after:content-[''] after:absolute after:w-0 after:h-[2px] after:bg-gradient-to-r after:from-cyan-400 after:to-purple-500
-                    after:left-0 after:bottom-[-4px] after:transition-all after:duration-300 hover:after:w-full"
+                    after:left-0 after:bottom-[-4px] after:transition-all after:duration-300 hover:after:w-full
+                    font-poppins mac-font-smoothing"
                   >
                     {menu.title}
                   </button>
@@ -269,7 +266,7 @@ export default function Navbar() {
                             className="block px-4 py-2 rounded-lg transition-all duration-300
                                        hover:bg-gradient-to-r hover:from-cyan-400 hover:to-purple-500
                                        hover:text-white hover:shadow-[0_0_15px_rgba(59,130,246,0.6)]
-                                       font-poppins text-[16px]"
+                                       font-poppins mac-font-smoothing text-[16px]"
                           >
                             {link.label}
                           </Link>
@@ -345,13 +342,13 @@ export default function Navbar() {
               transition={{ duration: 0.25, ease: "easeOut" }}
               className="md:hidden bg-white px-4 py-4 space-y-3 shadow-md font-poppins text-[16px] rounded-lg"
             >
-              <Link href="/" onClick={closeMenus} className="block py-2 px-3 rounded hover:bg-gray-100">Home</Link>
+              <Link href="/" onClick={closeMenus} className="block py-2 px-3 rounded hover:bg-gray-100 mac-font-smoothing">Home</Link>
 
               {menuItems.map((menu) => (
                 <div key={menu.key}>
                   <button
                     onClick={() => toggleDropdown(menu.key)}
-                    className="w-full text-left font-semibold py-2 px-3 rounded hover:bg-gray-100"
+                    className="w-full text-left font-semibold py-2 px-3 rounded hover:bg-gray-100 mac-font-smoothing"
                   >
                     {menu.title}
                   </button>
@@ -369,7 +366,7 @@ export default function Navbar() {
                             key={link.href}
                             href={link.href}
                             onClick={closeMenus}
-                            className="block py-2 px-3 rounded hover:bg-gray-100"
+                            className="block py-2 px-3 rounded hover:bg-gray-100 mac-font-smoothing"
                           >
                             {link.label}
                           </Link>
