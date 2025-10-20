@@ -31,58 +31,43 @@ export default function Navbar() {
   };
 
   const menuItems = [
-    {
-      title: "About Us",
-      key: "about-us",
-      links: [
+    { title: "About Us", key: "about-us", links: [
         { href: "/about-us/company-overview", label: "Company Overview" },
         { href: "/about-us/leadership-team", label: "Leadership Team" },
         { href: "/about-us/careers", label: "Careers" },
-      ],
+      ]
     },
-    {
-      title: "AI-Powered Solutions",
-      key: "ai-powered-solutions",
-      links: [
+    { title: "AI-Powered Solutions", key: "ai-powered-solutions", links: [
         { href: "/ai-powered-solutions/chatbots", label: "AI Chatbots & Virtual Assistant" },
         { href: "/ai-powered-solutions/strategy-consulting", label: "AI Strategy Consulting" },
         { href: "/ai-powered-solutions/predictive-analytics", label: "Predictive Analytics" },
         { href: "/ai-powered-solutions/intelligent-automation", label: "Intelligent Automation" },
-      ],
+      ]
     },
-    {
-      title: "Web Solutions",
-      key: "web-solutions",
-      links: [
+    { title: "Web Solutions", key: "web-solutions", links: [
         { href: "/web-solutions/development", label: "Web Development" },
         { href: "/web-solutions/design", label: "Website Design & Development" },
         { href: "/web-solutions/custom-web-app", label: "Custom Web Application" },
         { href: "/web-solutions/ecommerce", label: "E-Commerce Solution" },
         { href: "/web-solutions/api-integration", label: "API & System Integration" },
-      ],
+      ]
     },
-    {
-      title: "IT Services",
-      key: "it-services",
-      links: [
+    { title: "IT Services", key: "it-services", links: [
         { href: "/it-services/help-desk", label: "IT Help Desk Support" },
         { href: "/it-services/security", label: "IT Security Services" },
         { href: "/it-services/cloud", label: "Cloud Services" },
         { href: "/it-services/backup-recovery", label: "Backup & Disaster Recovery" },
         { href: "/it-services/strategic-consulting", label: "Strategic IT Consulting" },
-      ],
+      ]
     },
-    {
-      title: "Get Support",
-      key: "get-support",
-      links: [
+    { title: "Get Support", key: "get-support", links: [
         { href: "/get-support/client-portal", label: "Client Portal" },
         { href: "/get-support/remote-access", label: "Remote Access" },
         { href: "/get-support/onsite-troubleshooting", label: "Onsite Troubleshooting" },
         { href: "/get-support/troubleshooting-guides", label: "Troubleshooting Guides" },
         { href: "/get-support/request-quote", label: "Request A Quote" },
         { href: "/get-support/contact", label: "Contact Us" },
-      ],
+      ]
     },
   ];
 
@@ -149,6 +134,7 @@ export default function Navbar() {
           </button>
         </div>
       </div>
+
       {/* Mobile Contact Info Panel */}
       <AnimatePresence>
         {showContactInfo && (
@@ -174,7 +160,6 @@ export default function Navbar() {
           </motion.div>
         )}
       </AnimatePresence>
-
       {/* Main Header */}
       <div className="bg-white shadow-md py-4 relative rounded-full px-4 sm:px-6 lg:px-20">
         <div className="flex items-center justify-between w-full">
@@ -187,6 +172,7 @@ export default function Navbar() {
               <Image src="/logo.png" alt="Logo" width={180} height={60} className="object-contain" />
             </Link>
           </motion.div>
+
           {/* Mobile Search Input */}
           <AnimatePresence>
             {showSearch && (
@@ -218,8 +204,8 @@ export default function Navbar() {
           </button>
 
           {/* Desktop Menu */}
-          <div className="hidden md:flex items-center ml-[80px] overflow-x-auto flex-nowrap">
-            <div className="flex space-x-[25px] text-[18px] whitespace-nowrap">
+          <div className="hidden md:flex items-center ml-[80px] flex-nowrap">
+            <div className="flex space-x-6 text-[18px] whitespace-nowrap">
               <Link
                 href="/"
                 onClick={closeMenus}
@@ -277,9 +263,8 @@ export default function Navbar() {
               ))}
             </div>
 
-            {/* Search & Social Icons (Desktop Only) */}
-            <div className="flex items-center ml-[180px] space-x-[20px] relative">
-              {/* Search Icon */}
+            {/* Search & Social Icons */}
+            <div className="flex items-center ml-[180px] space-x-5 relative">
               <motion.div
                 whileHover={{ scale: 1.3 }}
                 className="rounded-full p-2 cursor-pointer transition"
@@ -288,7 +273,6 @@ export default function Navbar() {
                 <Search className="w-5 h-5 text-cyan-500" />
               </motion.div>
 
-              {/* Animated Search Input (Responsive) */}
               <AnimatePresence>
                 {showSearch && (
                   <motion.form
@@ -313,8 +297,7 @@ export default function Navbar() {
                 )}
               </AnimatePresence>
 
-              {/* Other Icons */}
-              {[ 
+              {[
                 { icon: <Mail className="w-5 h-5 text-cyan-500" />, href: "mailto:info@linorai.com" },
                 { icon: <Facebook className="w-5 h-5 text-cyan-500" />, href: "https://facebook.com" },
                 { icon: <Linkedin className="w-5 h-5 text-cyan-500" />, href: "https://linkedin.com" },
