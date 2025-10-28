@@ -33,6 +33,15 @@ const Chatbot: FC<ChatbotProps> = ({ visible, onClose }) => {
   const chatContainerRef = useRef<HTMLDivElement>(null);
   const emojiPickerRef = useRef<HTMLDivElement>(null);
 
+  // =======================================================
+  // Backend URL Auto-Switch (HTTP for local, HTTPS for prod)
+  // =======================================================
+  const BACKEND_URL =
+    typeof window !== "undefined" &&
+    window.location.hostname.includes("localhost")
+      ? "http://localhost:8000"
+      : "https://54.162.102.115:8000"; // <-- EC2 Public IP with HTTPS
+
   const formatTimestamp = (isoString: string) => {
     const date = new Date(isoString);
     return date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
@@ -63,7 +72,7 @@ const Chatbot: FC<ChatbotProps> = ({ visible, onClose }) => {
 
     setTyping(true);
     try {
-      const response = await fetch("http://127.0.0.1:8000/chat", {
+      const response = await fetch(`${BACKEND_URL}/chat`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ message: intent }),
@@ -75,13 +84,22 @@ const Chatbot: FC<ChatbotProps> = ({ visible, onClose }) => {
 
       setMessages((prev) => [
         ...prev,
-        { from: "bot", text: botResponse, timestamp: new Date().toISOString(), suggestions: botSuggestions },
+        {
+          from: "bot",
+          text: botResponse,
+          timestamp: new Date().toISOString(),
+          suggestions: botSuggestions,
+        },
       ]);
       scrollToBottom();
     } catch {
       setMessages((prev) => [
         ...prev,
-        { from: "bot", text: "[Error connecting to backend]", timestamp: new Date().toISOString() },
+        {
+          from: "bot",
+          text: "[Error connecting to backend]",
+          timestamp: new Date().toISOString(),
+        },
       ]);
       scrollToBottom();
     } finally {
@@ -100,7 +118,7 @@ const Chatbot: FC<ChatbotProps> = ({ visible, onClose }) => {
 
     setTyping(true);
     try {
-      const response = await fetch("http://127.0.0.1:8000/chat", {
+      const response = await fetch(`${BACKEND_URL}/chat`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ message: userMessage }),
@@ -112,13 +130,22 @@ const Chatbot: FC<ChatbotProps> = ({ visible, onClose }) => {
 
       setMessages((prev) => [
         ...prev,
-        { from: "bot", text: botResponse, timestamp: new Date().toISOString(), suggestions: botSuggestions },
+        {
+          from: "bot",
+          text: botResponse,
+          timestamp: new Date().toISOString(),
+          suggestions: botSuggestions,
+        },
       ]);
       scrollToBottom();
     } catch {
       setMessages((prev) => [
         ...prev,
-        { from: "bot", text: "[Error connecting to backend]", timestamp: new Date().toISOString() },
+        {
+          from: "bot",
+          text: "[Error connecting to backend]",
+          timestamp: new Date().toISOString(),
+        },
       ]);
       scrollToBottom();
     } finally {
@@ -151,10 +178,7 @@ const Chatbot: FC<ChatbotProps> = ({ visible, onClose }) => {
   // Close emoji picker when clicking outside
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
-      if (
-        emojiPickerRef.current &&
-        !emojiPickerRef.current.contains(event.target as Node)
-      ) {
+      if (emojiPickerRef.current && !emojiPickerRef.current.contains(event.target as Node)) {
         setShowEmojiPicker(false);
       }
     }
@@ -166,8 +190,10 @@ const Chatbot: FC<ChatbotProps> = ({ visible, onClose }) => {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [showEmojiPicker]);
 
+  // ==========================
+  // UI Section
+  // ==========================
   if (!visible) return null;
-
   return (
     <div
       className={`fixed top-4 md:top-16 right-2 md:right-8 w-[95%] md:w-[500px] min-w-[95%] md:min-w-[500px] max-w-[500px] h-[90vh] md:h-[85vh] bg-white rounded-2xl shadow-2xl flex flex-col z-50
@@ -214,7 +240,9 @@ const Chatbot: FC<ChatbotProps> = ({ visible, onClose }) => {
             {/* Suggestions */}
             {msg.from === "bot" && msg.suggestions?.length > 0 && index === messages.length - 1 && (
               <div className="pl-10 md:pl-14 flex flex-col gap-1 md:gap-2">
-                <div className="text-blue-700 font-semibold text-xs md:text-sm">Did you mean one of the following?</div>
+                <div className="text-blue-700 font-semibold text-xs md:text-sm">
+                  Did you mean one of the following?
+                </div>
                 {msg.suggestions.map((s, i) => (
                   <button
                     key={i}
@@ -330,9 +358,12 @@ const Chatbot: FC<ChatbotProps> = ({ visible, onClose }) => {
 
         {/* Privacy Policy */}
         <div className="w-full mt-2 px-2 md:px-3 py-2 text-[9px] md:text-xs text-gray-500 bg-gray-50 rounded text-left font-sans leading-snug shadow-inner">
-          <strong>Privacy Policy:</strong><br />
-          We value your privacy and keep all your chat data safe and secure.<br />
-          Your messages are only used to help us improve the chatbot experience.<br />
+          <strong>Privacy Policy:</strong>
+          <br />
+          We value your privacy and keep all your chat data safe and secure.
+          <br />
+          Your messages are only used to help us improve the chatbot experience.
+          <br />
           Please avoid sharing sensitive personal information here.
         </div>
       </div>
