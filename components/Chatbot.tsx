@@ -39,13 +39,13 @@ const Chatbot: FC<ChatbotProps> = ({ visible, onClose }) => {
   const BACKEND_URL = (() => {
     if (typeof window === "undefined") {
       // Server-side rendering fallback
-      return process.env.NEXT_PUBLIC_BACKEND_URL || "http://54.162.102.115:8000";
+      return process.env.NEXT_PUBLIC_BACKEND_URL || "http://54.162.102.115";
     }
      // Browser runtime
     if (window.location.hostname.includes("localhost")) {
       return "http://localhost:8000";
     }
-    return process.env.NEXT_PUBLIC_BACKEND_URL || "http://54.162.102.115:8000"; // fallback
+    return process.env.NEXT_PUBLIC_BACKEND_URL || "http://54.162.102.115"; // fallback
   })();
 
 // Debugging tip: check in browser console
