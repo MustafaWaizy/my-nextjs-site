@@ -37,10 +37,13 @@ const Chatbot: FC<ChatbotProps> = ({ visible, onClose }) => {
   // Backend URL Auto-Switch (HTTP for local, ENV for prod)
   // =======================================================
   const BACKEND_URL =
-    typeof window !== "undefined" &&
-    window.location.hostname.includes("localhost")
-      ? "http://localhost:8000"
-      : process.env.NEXT_PUBLIC_BACKEND_URL;
+   typeof window !== "undefined" && window.location.hostname.includes("localhost")
+    ? "http://localhost:8000"
+    : process.env.NEXT_PUBLIC_BACKEND_URL || "http://54.162.102.115:8000"; // fallback
+
+  // Debugging: check which URL is being used
+  console.log("BACKEND_URL:", BACKEND_URL);
+
 
   const formatTimestamp = (isoString: string) => {
     const date = new Date(isoString);
