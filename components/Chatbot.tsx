@@ -34,13 +34,13 @@ const Chatbot: FC<ChatbotProps> = ({ visible, onClose }) => {
   const emojiPickerRef = useRef<HTMLDivElement>(null);
 
   // =======================================================
-  // Backend URL Auto-Switch (HTTP for local, HTTPS for prod)
+  // Backend URL Auto-Switch (HTTP for local, ENV for prod)
   // =======================================================
   const BACKEND_URL =
     typeof window !== "undefined" &&
     window.location.hostname.includes("localhost")
       ? "http://localhost:8000"
-      : "https://54.162.102.115:8000"; // <-- EC2 Public IP with HTTPS
+      : process.env.NEXT_PUBLIC_API_URL;
 
   const formatTimestamp = (isoString: string) => {
     const date = new Date(isoString);
@@ -152,7 +152,6 @@ const Chatbot: FC<ChatbotProps> = ({ visible, onClose }) => {
       setTyping(false);
     }
   };
-
   useEffect(() => {
     if (visible && !initialized) {
       setShowTyping(true);
