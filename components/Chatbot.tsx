@@ -40,7 +40,7 @@ const Chatbot: FC<ChatbotProps> = ({ visible, onClose }) => {
     typeof window !== "undefined" &&
     window.location.hostname.includes("localhost")
       ? "http://localhost:8000"
-      : process.env.NEXT_PUBLIC_API_URL;
+      : process.env.NEXT_PUBLIC_BACKEND_URL;
 
   const formatTimestamp = (isoString: string) => {
     const date = new Date(isoString);
