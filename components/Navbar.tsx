@@ -31,20 +31,23 @@ export default function Navbar() {
   };
 
   const menuItems = [
-    { title: "About Us", key: "about-us", links: [
+    {
+      title: "About Us", key: "about-us", links: [
         { href: "/about-us/company-overview", label: "Company Overview" },
         { href: "/about-us/leadership-team", label: "Leadership Team" },
         { href: "/about-us/careers", label: "Careers" },
       ]
     },
-    { title: "AI-Powered Solutions", key: "ai-powered-solutions", links: [
+    {
+      title: "AI-Powered Solutions", key: "ai-powered-solutions", links: [
         { href: "/ai-powered-solutions/chatbots", label: "AI Chatbots & Virtual Assistant" },
         { href: "/ai-powered-solutions/strategy-consulting", label: "AI Strategy Consulting" },
         { href: "/ai-powered-solutions/predictive-analytics", label: "Predictive Analytics" },
         { href: "/ai-powered-solutions/intelligent-automation", label: "Intelligent Automation" },
       ]
     },
-    { title: "Web Solutions", key: "web-solutions", links: [
+    {
+      title: "Web Solutions", key: "web-solutions", links: [
         { href: "/web-solutions/development", label: "Web Development" },
         { href: "/web-solutions/design", label: "Website Design & Development" },
         { href: "/web-solutions/custom-web-app", label: "Custom Web Application" },
@@ -52,7 +55,8 @@ export default function Navbar() {
         { href: "/web-solutions/api-integration", label: "API & System Integration" },
       ]
     },
-    { title: "IT Services", key: "it-services", links: [
+    {
+      title: "IT Services", key: "it-services", links: [
         { href: "/it-services/help-desk", label: "IT Help Desk Support" },
         { href: "/it-services/security", label: "IT Security Services" },
         { href: "/it-services/cloud", label: "Cloud Services" },
@@ -60,7 +64,8 @@ export default function Navbar() {
         { href: "/it-services/strategic-consulting", label: "Strategic IT Consulting" },
       ]
     },
-    { title: "Get Support", key: "get-support", links: [
+    {
+      title: "Get Support", key: "get-support", links: [
         { href: "/get-support/client-portal", label: "Client Portal" },
         { href: "/get-support/remote-access", label: "Remote Access" },
         { href: "/get-support/onsite-troubleshooting", label: "Onsite Troubleshooting" },
@@ -111,7 +116,7 @@ export default function Navbar() {
         </div>
       </div>
 
-      {/* Mobile Top Bar - Sticky */}
+      {/* Mobile Top Bar */}
       <div className="flex md:hidden justify-between items-center px-4 py-2 bg-gradient-to-r from-cyan-600 via-blue-700 to-purple-700 text-white sticky top-0 z-50">
         <button
           onClick={() => setShowContactInfo(!showContactInfo)}
@@ -160,98 +165,60 @@ export default function Navbar() {
           </motion.div>
         )}
       </AnimatePresence>
+
       {/* Main Header */}
       <div className="bg-white shadow-md py-4 relative rounded-full px-4 sm:px-6 lg:px-20">
-        <div className="flex items-center justify-between w-full">
-          {/* Logo */}
-          <motion.div
-            whileHover={{ scale: 1.05, boxShadow: "0 0 20px rgba(0,255,255,0.5), 0 0 40px rgba(128,0,255,0.3)" }}
-            className="flex items-center relative"
-          >
+        <div className="relative flex items-center justify-between w-full">
+          {/* --- LEFT: Logo --- */}
+          <motion.div whileHover={{ scale: 1.05 }} className="flex items-center">
             <Link href="/" onClick={closeMenus}>
-              <Image src="/logo.png" alt="Logo" width={180} height={60} className="object-contain" />
+              <Image
+                src="/logo.png"
+                alt="Logo"
+                width={140}
+                height={70}
+                className="object-contain cursor-pointer"
+                priority
+              />
             </Link>
           </motion.div>
 
-          {/* Mobile Search Input */}
-          <AnimatePresence>
-            {showSearch && (
-              <motion.form
-                initial={{ opacity: 0, y: -10 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -10 }}
-                transition={{ duration: 0.3 }}
-                onSubmit={handleSearchSubmit}
-                className="md:hidden absolute top-full right-4 mt-2 w-64 bg-white shadow-md rounded-full flex items-center px-3 py-1 z-50"
-              >
-                <input
-                  type="text"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  placeholder="Search..."
-                  className="w-full text-sm outline-none"
-                />
-                <button type="button" onClick={() => setShowSearch(false)}>
-                  <X className="w-4 h-4 text-gray-500 hover:text-red-500" />
-                </button>
-              </motion.form>
-            )}
-          </AnimatePresence>
+          {/* --- CENTER: Menu Items --- */}
+          <div className="absolute left-[52%] transform -translate-x-1/2 hidden md:flex space-x-8 text-[18px] font-poppins whitespace-nowrap">
 
-          {/* Mobile Menu Button */}
-          <button className="md:hidden text-gray-700 text-3xl ml-4" onClick={() => setIsOpen(!isOpen)}>
-            ☰
-          </button>
-
-          {/* Desktop Menu */}
-          <div className="hidden md:flex items-center ml-[80px] flex-nowrap">
-            <div className="flex space-x-6 text-[18px] whitespace-nowrap">
-              <Link
-                href="/"
-                onClick={closeMenus}
-                className="relative hover:text-cyan-500 transition-colors duration-300
-                           after:content-[''] after:absolute after:w-0 after:h-[2px] after:bg-gradient-to-r after:from-cyan-400 after:to-purple-500
-                           after:left-0 after:bottom-[-4px] after:transition-all after:duration-300 hover:after:w-full
-                           font-poppins mac-font-smoothing"
-              >
-                Home
-              </Link>
-
+            <Link
+              href="/"
+              onClick={closeMenus}
+              className="hover:text-cyan-600 transition-colors duration-300 font-medium"
+            >
+              Home
+            </Link>
               {menuItems.map((menu) => (
                 <div
                   key={menu.key}
-                  className="relative group flex-shrink-0"
+                  className="relative group"
                   onMouseEnter={() => setActiveDropdown(menu.key)}
                   onMouseLeave={() => setActiveDropdown(null)}
                 >
-                  <button className="relative hover:text-cyan-500 transition-colors duration-300
-                    after:content-[''] after:absolute after:w-0 after:h-[2px] after:bg-gradient-to-r after:from-cyan-400 after:to-purple-500
-                    after:left-0 after:bottom-[-4px] after:transition-all after:duration-300 hover:after:w-full
-                    font-poppins mac-font-smoothing whitespace-nowrap"
-                  >
+                  <button className="hover:text-cyan-600 font-medium transition-colors duration-300">
                     {menu.title}
                   </button>
 
                   <AnimatePresence>
                     {activeDropdown === menu.key && (
                       <motion.div
-                        initial="hidden"
-                        animate="visible"
-                        exit="exit"
-                        variants={dropdownVariants}
-                        transition={{ duration: 0.25, ease: "easeOut" }}
-                        className="absolute top-full left-1/2 transform -translate-x-1/2 mt-2
-                                   w-72 bg-white shadow-xl rounded-xl py-2 z-50"
+                        initial={{ opacity: 0, y: -10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -10 }}
+                        transition={{ duration: 0.25 }}
+                        className="absolute top-full left-1/2 transform -translate-x-1/2 mt-3 w-72 bg-white shadow-lg rounded-xl py-2 z-50"
                       >
                         {menu.links.map((link) => (
                           <Link
                             key={link.href}
                             href={link.href}
                             onClick={closeMenus}
-                            className="block px-4 py-2 rounded-lg transition-all duration-300
-                                       hover:bg-gradient-to-r hover:from-cyan-400 hover:to-purple-500
-                                       hover:text-white hover:shadow-[0_0_15px_rgba(59,130,246,0.6)]
-                                       font-poppins mac-font-smoothing text-[16px] whitespace-nowrap"
+                            className="block px-4 py-2 rounded-lg hover:bg-gradient-to-r hover:from-cyan-400 hover:to-purple-500 hover:text-white transition-all duration-300"
                           >
                             {link.label}
                           </Link>
@@ -263,58 +230,88 @@ export default function Navbar() {
               ))}
             </div>
 
-            {/* Search & Social Icons */}
-            <div className="flex items-center ml-[180px] space-x-5 relative">
-              <motion.div
-                whileHover={{ scale: 1.3 }}
-                className="rounded-full p-2 cursor-pointer transition"
-                onClick={() => setShowSearch(!showSearch)}
-              >
-                <Search className="w-5 h-5 text-cyan-500" />
-              </motion.div>
+          {/* --- RIGHT: Search + Social Icons --- */}
+          <div className="flex items-center space-x-5">
+            <motion.div
+              whileHover={{ scale: 1.3 }}
+              className="cursor-pointer"
+              onClick={() => setShowSearch(!showSearch)}
+            >
+              <Search className="w-5 h-5 text-cyan-600" />
+            </motion.div>
 
-              <AnimatePresence>
-                {showSearch && (
-                  <motion.form
-                    initial={{ opacity: 0, width: 0 }}
-                    animate={{ opacity: 1, width: "100%" }}
-                    exit={{ opacity: 0, width: 0 }}
-                    transition={{ duration: 0.3 }}
-                    onSubmit={handleSearchSubmit}
-                    className="absolute top-full mt-2 md:mt-0 md:right-[120px] right-0 md:w-[220px] w-full flex items-center bg-white shadow-md rounded-full border border-cyan-300 overflow-hidden px-2 z-50"
-                  >
-                    <input
-                      type="text"
-                      value={searchQuery}
-                      onChange={(e) => setSearchQuery(e.target.value)}
-                      placeholder="Search..."
-                      className="outline-none text-sm px-2 py-2 w-full"
-                    />
-                    <button type="button" onClick={() => setShowSearch(false)}>
-                      <X className="w-5 h-5 text-gray-500 hover:text-red-500" />
-                    </button>
-                  </motion.form>
-                )}
-              </AnimatePresence>
-
-              {[
-                { icon: <Mail className="w-5 h-5 text-cyan-500" />, href: "mailto:info@linorai.com" },
-                { icon: <Facebook className="w-5 h-5 text-cyan-500" />, href: "https://facebook.com" },
-                { icon: <Linkedin className="w-5 h-5 text-cyan-500" />, href: "https://linkedin.com" },
-              ].map((item, index) => (
-                <motion.div
-                  key={index}
-                  whileHover={{ scale: 1.3 }}
-                  className="rounded-full p-2 cursor-pointer transition"
+            <AnimatePresence>
+              {showSearch && (
+                <motion.form
+                  initial={{ opacity: 0, width: 0 }}
+                  animate={{ opacity: 1, width: "180px" }}
+                  exit={{ opacity: 0, width: 0 }}
+                  transition={{ duration: 0.3 }}
+                  onSubmit={handleSearchSubmit}
+                  className="absolute right-0 top-full mt-2 flex items-center bg-white shadow-md rounded-full border border-cyan-300 overflow-hidden px-2 z-50"
                 >
-                  <Link href={item.href} target="_blank">{item.icon}</Link>
-                </motion.div>
-              ))}
-            </div>
+                  <input
+                    type="text"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    placeholder="Search..."
+                    className="outline-none text-sm px-2 py-2 w-full"
+                  />
+                  <button type="button" onClick={() => setShowSearch(false)}>
+                    <X className="w-5 h-5 text-gray-500 hover:text-red-500" />
+                  </button>
+                </motion.form>
+              )}
+            </AnimatePresence>
+
+            {[
+              { icon: <Mail className="w-5 h-5 text-cyan-600" />, href: "mailto:info@linorai.com" },
+              { icon: <Facebook className="w-5 h-5 text-cyan-600" />, href: "https://facebook.com" },
+              { icon: <Linkedin className="w-5 h-5 text-cyan-600" />, href: "https://linkedin.com" },
+            ].map((item, i) => (
+              <motion.div key={i} whileHover={{ scale: 1.3 }}>
+                <Link href={item.href} target="_blank">
+                  {item.icon}
+                </Link>
+              </motion.div>
+            ))}
           </div>
         </div>
 
-        {/* Mobile Dropdown */}
+        {/* --- MOBILE SEARCH INPUT --- */}
+        <AnimatePresence>
+          {showSearch && (
+            <motion.form
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              transition={{ duration: 0.3 }}
+              onSubmit={handleSearchSubmit}
+              className="md:hidden absolute top-full right-4 mt-2 w-64 bg-white shadow-md rounded-full flex items-center px-3 py-1 z-50"
+            >
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Search..."
+                className="w-full text-sm outline-none"
+              />
+              <button type="button" onClick={() => setShowSearch(false)}>
+                <X className="w-4 h-4 text-gray-500 hover:text-red-500" />
+              </button>
+            </motion.form>
+          )}
+        </AnimatePresence>
+
+        {/* --- MOBILE MENU BUTTON --- */}
+        <button
+          className="md:hidden text-gray-700 text-3xl ml-4"
+          onClick={() => setIsOpen(!isOpen)}
+        >
+          ☰
+        </button>
+
+        {/* --- MOBILE DROPDOWN --- */}
         <AnimatePresence>
           {isOpen && (
             <motion.div
@@ -324,7 +321,13 @@ export default function Navbar() {
               transition={{ duration: 0.25, ease: "easeOut" }}
               className="md:hidden bg-white px-4 py-4 space-y-3 shadow-md font-poppins text-[16px] rounded-lg"
             >
-              <Link href="/" onClick={closeMenus} className="block py-2 px-3 rounded hover:bg-gray-100 mac-font-smoothing">Home</Link>
+              <Link
+                href="/"
+                onClick={closeMenus}
+                className="block py-2 px-3 rounded hover:bg-gray-100 mac-font-smoothing"
+              >
+                Home
+              </Link>
 
               {menuItems.map((menu) => (
                 <div key={menu.key}>
