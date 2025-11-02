@@ -165,7 +165,6 @@ export default function Navbar() {
           </motion.div>
         )}
       </AnimatePresence>
-
       {/* Main Header */}
       <div className="bg-white shadow-md py-4 relative rounded-full px-4 sm:px-6 lg:px-20">
         <div className="relative flex items-center justify-between w-full">
@@ -185,7 +184,6 @@ export default function Navbar() {
 
           {/* --- CENTER: Menu Items --- */}
           <div className="absolute left-[52%] transform -translate-x-1/2 hidden md:flex space-x-8 text-[18px] font-poppins whitespace-nowrap">
-
             <Link
               href="/"
               onClick={closeMenus}
@@ -193,45 +191,47 @@ export default function Navbar() {
             >
               Home
             </Link>
-              {menuItems.map((menu) => (
-                <div
-                  key={menu.key}
-                  className="relative group"
-                  onMouseEnter={() => setActiveDropdown(menu.key)}
-                  onMouseLeave={() => setActiveDropdown(null)}
-                >
-                  <button className="hover:text-cyan-600 font-medium transition-colors duration-300">
-                    {menu.title}
-                  </button>
 
-                  <AnimatePresence>
-                    {activeDropdown === menu.key && (
-                      <motion.div
-                        initial={{ opacity: 0, y: -10 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, y: -10 }}
-                        transition={{ duration: 0.25 }}
-                        className="absolute top-full left-1/2 transform -translate-x-1/2 mt-3 w-72 bg-white shadow-lg rounded-xl py-2 z-50"
-                      >
-                        {menu.links.map((link) => (
-                          <Link
-                            key={link.href}
-                            href={link.href}
-                            onClick={closeMenus}
-                            className="block px-4 py-2 rounded-lg hover:bg-gradient-to-r hover:from-cyan-400 hover:to-purple-500 hover:text-white transition-all duration-300"
-                          >
-                            {link.label}
-                          </Link>
-                        ))}
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
-                </div>
-              ))}
-            </div>
+            {menuItems.map((menu) => (
+              <div
+                key={menu.key}
+                className="relative group"
+                onMouseEnter={() => setActiveDropdown(menu.key)}
+                onMouseLeave={() => setActiveDropdown(null)}
+              >
+                <button className="hover:text-cyan-600 font-medium transition-colors duration-300">
+                  {menu.title}
+                </button>
 
-          {/* --- RIGHT: Search + Social Icons --- */}
-          <div className="flex items-center space-x-5">
+                <AnimatePresence>
+                  {activeDropdown === menu.key && (
+                    <motion.div
+                      initial={{ opacity: 0, y: -10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -10 }}
+                      transition={{ duration: 0.25 }}
+                      className="absolute top-full left-1/2 transform -translate-x-1/2 mt-3 w-72 bg-white shadow-lg rounded-xl py-2 z-50"
+                    >
+                      {menu.links.map((link) => (
+                        <Link
+                          key={link.href}
+                          href={link.href}
+                          onClick={closeMenus}
+                          className="block px-4 py-2 rounded-lg hover:bg-gradient-to-r hover:from-cyan-400 hover:to-purple-500 hover:text-white transition-all duration-300"
+                        >
+                          {link.label}
+                        </Link>
+                      ))}
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
+            ))}
+          </div>
+
+          {/* --- RIGHT SECTION --- */}
+          {/* Desktop: Search + Social Icons */}
+          <div className="hidden md:flex items-center space-x-5">
             <motion.div
               whileHover={{ scale: 1.3 }}
               className="cursor-pointer"
@@ -239,30 +239,6 @@ export default function Navbar() {
             >
               <Search className="w-5 h-5 text-cyan-600" />
             </motion.div>
-
-            <AnimatePresence>
-              {showSearch && (
-                <motion.form
-                  initial={{ opacity: 0, width: 0 }}
-                  animate={{ opacity: 1, width: "180px" }}
-                  exit={{ opacity: 0, width: 0 }}
-                  transition={{ duration: 0.3 }}
-                  onSubmit={handleSearchSubmit}
-                  className="absolute right-0 top-full mt-2 flex items-center bg-white shadow-md rounded-full border border-cyan-300 overflow-hidden px-2 z-50"
-                >
-                  <input
-                    type="text"
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    placeholder="Search..."
-                    className="outline-none text-sm px-2 py-2 w-full"
-                  />
-                  <button type="button" onClick={() => setShowSearch(false)}>
-                    <X className="w-5 h-5 text-gray-500 hover:text-red-500" />
-                  </button>
-                </motion.form>
-              )}
-            </AnimatePresence>
 
             {[
               { icon: <Mail className="w-5 h-5 text-cyan-600" />, href: "mailto:info@linorai.com" },
@@ -276,6 +252,14 @@ export default function Navbar() {
               </motion.div>
             ))}
           </div>
+
+          {/* Mobile: Hamburger Menu Icon */}
+          <button
+            className="md:hidden text-gray-700 text-3xl ml-auto"
+            onClick={() => setIsOpen(!isOpen)}
+          >
+            ☰
+          </button>
         </div>
 
         {/* --- MOBILE SEARCH INPUT --- */}
@@ -302,14 +286,6 @@ export default function Navbar() {
             </motion.form>
           )}
         </AnimatePresence>
-
-        {/* --- MOBILE MENU BUTTON --- */}
-        <button
-          className="md:hidden text-gray-700 text-3xl ml-4"
-          onClick={() => setIsOpen(!isOpen)}
-        >
-          ☰
-        </button>
 
         {/* --- MOBILE DROPDOWN --- */}
         <AnimatePresence>
