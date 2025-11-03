@@ -172,16 +172,17 @@ export default function MobileNavbar() {
         )}
       </AnimatePresence>
 
-      {/* --- MOBILE DROPDOWN --- */}
+      {/* --- SLIDE-IN SIDE DRAWER --- */}
       <AnimatePresence>
         {isOpen && (
           <motion.div
-            initial={{ opacity: 0, y: -10 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -10 }}
-            transition={{ duration: 0.25, ease: "easeOut" }}
-            className="bg-white px-4 py-4 space-y-3 shadow-md font-poppins text-[16px] rounded-lg"
+            initial={{ x: "100%" }}
+            animate={{ x: 0 }}
+            exit={{ x: "100%" }}
+            transition={{ type: "tween", duration: 0.3 }}
+            className="fixed top-0 right-0 h-full w-4/5 bg-white shadow-xl z-50 p-6 flex flex-col space-y-4"
           >
+            <button onClick={closeMenus} className="self-end text-2xl">✕</button>
             <Link href="/" onClick={closeMenus} className="block py-2 px-3 rounded hover:bg-gray-100">
               Home
             </Link>
@@ -197,10 +198,10 @@ export default function MobileNavbar() {
                 <AnimatePresence>
                   {activeDropdown === menu.key && (
                     <motion.div
-                      initial={{ opacity: 0, y: -5, scale: 0.95 }}
-                      animate={{ opacity: 1, y: 0, scale: 1 }}
-                      exit={{ opacity: 0, y: -5, scale: 0.95 }}
-                      transition={{ duration: 0.2, ease: "easeOut" }}
+                      initial={{ opacity: 0, y: -5 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -5 }}
+                      transition={{ duration: 0.2 }}
                       className="ml-4 space-y-1"
                     >
                       {menu.links.map((link) => (
