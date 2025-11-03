@@ -1,34 +1,20 @@
 "use client";
 
 import Link from "next/link";
-import { useState, useEffect } from "react";
 import Image from "next/image";
+import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Search, Mail, Facebook, Linkedin, Phone, Clock, X } from "lucide-react";
+import { Search, Mail, Facebook, Linkedin, Phone, Clock } from "lucide-react";
 import { useRouter } from "next/navigation";
+import MobileNavbar from "./MobileNavbar";
 
-export default function Navbar() {
-  const [isOpen, setIsOpen] = useState(false);
+export default function DesktopNavbar() {
   const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
-  const [showContactInfo, setShowContactInfo] = useState(false);
   const [showSearch, setShowSearch] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const router = useRouter();
 
-  const toggleDropdown = (menu: string) => {
-    setActiveDropdown(activeDropdown === menu ? null : menu);
-  };
-
-  const closeMenus = () => {
-    setIsOpen(false);
-    setActiveDropdown(null);
-  };
-
-  const dropdownVariants = {
-    hidden: { opacity: 0, y: -10, scale: 0.95 },
-    visible: { opacity: 1, y: 0, scale: 1 },
-    exit: { opacity: 0, y: -10, scale: 0.95 },
-  };
+  const closeMenus = () => setActiveDropdown(null);
 
   const menuItems = [
     {
@@ -77,10 +63,7 @@ export default function Navbar() {
   ];
 
   useEffect(() => {
-    const handleChange = () => closeMenus();
     router.prefetch("/");
-    window.addEventListener("popstate", handleChange);
-    return () => window.removeEventListener("popstate", handleChange);
   }, [router]);
 
   const handleSearchSubmit = (e: React.FormEvent) => {
@@ -93,9 +76,9 @@ export default function Navbar() {
   };
 
   return (
-    <nav className="sticky top-0 z-50 w-full font-poppins backdrop-blur-sm bg-white/80 shadow-lg">
-      {/* Top Gradient Info Bar - Desktop Only */}
-      <div className="hidden md:flex bg-gradient-to-r from-cyan-600 via-blue-700 to-purple-700 h-12 flex-col sm:flex-row items-center justify-center sm:space-x-12 text-sm text-white rounded-full mb-1 px-2 sm:px-0">
+    <nav className="hidden md:block sticky top-0 z-50 w-full font-poppins backdrop-blur-sm bg-white/80 shadow-lg">
+      {/* Top Info Bar */}
+      <div className="flex bg-gradient-to-r from-cyan-600 via-blue-700 to-purple-700 h-12 items-center justify-center space-x-12 text-sm text-white rounded-full mb-1 px-2">
         <div className="flex items-center space-x-2">
           <Phone className="w-4 h-4 text-white" />
           <span>Call Anytime:</span>
@@ -116,61 +99,12 @@ export default function Navbar() {
         </div>
       </div>
 
-      {/* Mobile Top Bar */}
-      <div className="flex md:hidden justify-between items-center px-4 py-2 bg-gradient-to-r from-cyan-600 via-blue-700 to-purple-700 text-white sticky top-0 z-50">
-        <button
-          onClick={() => setShowContactInfo(!showContactInfo)}
-          className="text-sm font-medium px-4 py-2 rounded-full border border-white/30 hover:bg-white/10 transition"
-        >
-          Contact Info
-        </button>
-        <div className="flex items-center space-x-3">
-          <Link href="https://facebook.com" target="_blank">
-            <Facebook className="w-5 h-5 text-white" />
-          </Link>
-          <Link href="https://linkedin.com" target="_blank">
-            <Linkedin className="w-5 h-5 text-white" />
-          </Link>
-          <Link href="mailto:info@linorai.com">
-            <Mail className="w-5 h-5 text-white" />
-          </Link>
-          <button onClick={() => setShowSearch(!showSearch)}>
-            <Search className="w-5 h-5 text-white" />
-          </button>
-        </div>
-      </div>
-
-      {/* Mobile Contact Info Panel */}
-      <AnimatePresence>
-        {showContactInfo && (
-          <motion.div
-            initial={{ opacity: 0, y: -10 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -10 }}
-            transition={{ duration: 0.3 }}
-            className="md:hidden bg-gradient-to-r from-cyan-600 via-blue-700 to-purple-700 text-white text-sm rounded-lg px-4 py-3 space-y-2 mb-2 text-center"
-          >
-            <div className="flex justify-center items-center space-x-2">
-              <Phone className="w-4 h-4" />
-              <a href="tel:+16196223468">+1 (619) 622 3468</a>
-            </div>
-            <div className="flex justify-center items-center space-x-2">
-              <Mail className="w-4 h-4" />
-              <a href="mailto:info@linorai.com">info@LinorAI.com</a>
-            </div>
-            <div className="flex justify-center items-center space-x-2">
-              <Clock className="w-4 h-4" />
-              <span>Mon - Fri 08 am - 10 pm</span>
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
       {/* Main Header */}
-      <div className="bg-white shadow-md py-4 relative rounded-full px-4 sm:px-6 lg:px-20">
-        <div className="relative flex items-center justify-between w-full">
-          {/* --- LEFT: Logo --- */}
+      <div className="bg-white shadow-md py-4 relative rounded-full px-20">
+        <div className="flex items-center justify-between w-full">
+          {/* LEFT: Logo */}
           <motion.div whileHover={{ scale: 1.05 }} className="flex items-center">
-            <Link href="/" onClick={closeMenus}>
+            <Link href="/">
               <Image
                 src="/logo.png"
                 alt="Logo"
@@ -182,13 +116,9 @@ export default function Navbar() {
             </Link>
           </motion.div>
 
-          {/* --- CENTER: Menu Items --- */}
-          <div className="absolute left-[52%] transform -translate-x-1/2 hidden md:flex space-x-8 text-[18px] font-poppins whitespace-nowrap">
-            <Link
-              href="/"
-              onClick={closeMenus}
-              className="hover:text-cyan-600 transition-colors duration-300 font-medium"
-            >
+          {/* CENTER: Menu Items */}
+          <div className="flex space-x-8 text-[18px] font-poppins whitespace-nowrap">
+            <Link href="/" className="hover:text-cyan-600 transition-colors duration-300 font-medium">
               Home
             </Link>
 
@@ -216,7 +146,6 @@ export default function Navbar() {
                         <Link
                           key={link.href}
                           href={link.href}
-                          onClick={closeMenus}
                           className="block px-4 py-2 rounded-lg hover:bg-gradient-to-r hover:from-cyan-400 hover:to-purple-500 hover:text-white transition-all duration-300"
                         >
                           {link.label}
@@ -229,14 +158,9 @@ export default function Navbar() {
             ))}
           </div>
 
-          {/* --- RIGHT SECTION --- */}
-          {/* Desktop: Search + Social Icons */}
-          <div className="hidden md:flex items-center space-x-5">
-            <motion.div
-              whileHover={{ scale: 1.3 }}
-              className="cursor-pointer"
-              onClick={() => setShowSearch(!showSearch)}
-            >
+          {/* RIGHT: Search + Social Icons */}
+          <div className="flex items-center space-x-5">
+            <motion.div whileHover={{ scale: 1.3 }} className="cursor-pointer" onClick={() => setShowSearch(!showSearch)}>
               <Search className="w-5 h-5 text-cyan-600" />
             </motion.div>
 
@@ -252,94 +176,7 @@ export default function Navbar() {
               </motion.div>
             ))}
           </div>
-
-          {/* Mobile: Hamburger Menu Icon */}
-          <button
-            className="md:hidden text-gray-700 text-3xl ml-auto"
-            onClick={() => setIsOpen(!isOpen)}
-          >
-            ☰
-          </button>
         </div>
-
-        {/* --- MOBILE SEARCH INPUT --- */}
-        <AnimatePresence>
-          {showSearch && (
-            <motion.form
-              initial={{ opacity: 0, y: -10 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -10 }}
-              transition={{ duration: 0.3 }}
-              onSubmit={handleSearchSubmit}
-              className="md:hidden absolute top-full right-4 mt-2 w-64 bg-white shadow-md rounded-full flex items-center px-3 py-1 z-50"
-            >
-              <input
-                type="text"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Search..."
-                className="w-full text-sm outline-none"
-              />
-              <button type="button" onClick={() => setShowSearch(false)}>
-                <X className="w-4 h-4 text-gray-500 hover:text-red-500" />
-              </button>
-            </motion.form>
-          )}
-        </AnimatePresence>
-
-        {/* --- MOBILE DROPDOWN --- */}
-        <AnimatePresence>
-          {isOpen && (
-            <motion.div
-              initial={{ opacity: 0, y: -10 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -10 }}
-              transition={{ duration: 0.25, ease: "easeOut" }}
-              className="md:hidden bg-white px-4 py-4 space-y-3 shadow-md font-poppins text-[16px] rounded-lg"
-            >
-              <Link
-                href="/"
-                onClick={closeMenus}
-                className="block py-2 px-3 rounded hover:bg-gray-100 mac-font-smoothing"
-              >
-                Home
-              </Link>
-
-              {menuItems.map((menu) => (
-                <div key={menu.key}>
-                  <button
-                    onClick={() => toggleDropdown(menu.key)}
-                    className="w-full text-left font-semibold py-2 px-3 rounded hover:bg-gray-100 mac-font-smoothing"
-                  >
-                    {menu.title}
-                  </button>
-                  <AnimatePresence>
-                    {activeDropdown === menu.key && (
-                      <motion.div
-                        initial={{ opacity: 0, y: -5, scale: 0.95 }}
-                        animate={{ opacity: 1, y: 0, scale: 1 }}
-                        exit={{ opacity: 0, y: -5, scale: 0.95 }}
-                        transition={{ duration: 0.2, ease: "easeOut" }}
-                        className="ml-4 space-y-1"
-                      >
-                        {menu.links.map((link) => (
-                          <Link
-                            key={link.href}
-                            href={link.href}
-                            onClick={closeMenus}
-                            className="block py-2 px-3 rounded hover:bg-gray-100 mac-font-smoothing"
-                          >
-                            {link.label}
-                          </Link>
-                        ))}
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
-                </div>
-              ))}
-            </motion.div>
-          )}
-        </AnimatePresence>
       </div>
     </nav>
   );

@@ -2,7 +2,7 @@ import "./globals.css";
 import type { Metadata } from "next";
 import { Inter, Poppins } from "next/font/google";
 
-import Navbar from "../components/Navbar";
+import Navbar from "../components/NavbarWrapper";
 import Footer from "../components/Footer";
 import ChatWrapper from "../components/ChatWrapper";
 import Preloader from "../components/Preloader";
