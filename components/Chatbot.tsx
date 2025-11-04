@@ -41,17 +41,15 @@ const Chatbot: FC<ChatbotProps> = ({ visible, onClose }) => {
       // Server-side rendering fallback
       return process.env.NEXT_PUBLIC_BACKEND_URL || "http://54.162.102.115";
     }
-     // Browser runtime
+    // Browser runtime
     if (window.location.hostname.includes("localhost")) {
       return "http://localhost:8000";
     }
     return process.env.NEXT_PUBLIC_BACKEND_URL || "http://54.162.102.115"; // fallback
   })();
 
-// Debugging tip: check in browser console
-console.log("BACKEND_URL:", BACKEND_URL);
-
-
+  // Debugging tip: check in browser console
+  console.log("BACKEND_URL:", BACKEND_URL);
 
   const formatTimestamp = (isoString: string) => {
     const date = new Date(isoString);
@@ -66,20 +64,25 @@ console.log("BACKEND_URL:", BACKEND_URL);
     );
     processed = processed.replace(
       /([a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,})/g,
-      (email) => `<a href="mailto:${email}" class="text-blue-600 underline">${email}</a>`
+      (email) =>
+        `<a href="mailto:${email}" class="text-blue-600 underline">${email}</a>`
     );
     return processed;
   };
 
   const scrollToBottom = () => {
     if (chatContainerRef.current) {
-      chatContainerRef.current.scrollTop = chatContainerRef.current.scrollHeight;
+      chatContainerRef.current.scrollTop =
+        chatContainerRef.current.scrollHeight;
     }
   };
 
   const handleSuggestionClick = async (intent: string) => {
     const now = new Date().toISOString();
-    setMessages((prev) => [...prev, { from: "user", text: intent, timestamp: now }]);
+    setMessages((prev) => [
+      ...prev,
+      { from: "user", text: intent, timestamp: now },
+    ]);
 
     setTyping(true);
     try {
@@ -123,7 +126,10 @@ console.log("BACKEND_URL:", BACKEND_URL);
     const now = new Date().toISOString();
     const userMessage = input;
 
-    setMessages((prev) => [...prev, { from: "user", text: userMessage, timestamp: now }]);
+    setMessages((prev) => [
+      ...prev,
+      { from: "user", text: userMessage, timestamp: now },
+    ]);
     setInput("");
     scrollToBottom();
 
@@ -163,6 +169,7 @@ console.log("BACKEND_URL:", BACKEND_URL);
       setTyping(false);
     }
   };
+
   useEffect(() => {
     if (visible && !initialized) {
       setShowTyping(true);
@@ -188,7 +195,10 @@ console.log("BACKEND_URL:", BACKEND_URL);
   // Close emoji picker when clicking outside
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
-      if (emojiPickerRef.current && !emojiPickerRef.current.contains(event.target as Node)) {
+      if (
+        emojiPickerRef.current &&
+        !emojiPickerRef.current.contains(event.target as Node)
+      ) {
         setShowEmojiPicker(false);
       }
     }
@@ -199,21 +209,33 @@ console.log("BACKEND_URL:", BACKEND_URL);
     }
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [showEmojiPicker]);
-
   // ==========================
   // UI Section
   // ==========================
   if (!visible) return null;
   return (
     <div
-      className={`fixed top-4 md:top-16 right-2 md:right-8 w-[95%] md:w-[500px] min-w-[95%] md:min-w-[500px] max-w-[500px] h-[90vh] md:h-[85vh] bg-white rounded-2xl shadow-2xl flex flex-col z-50
-              transform transition-transform duration-500 ease-out
-              ${visible ? "translate-x-0 opacity-100" : "translate-x-full opacity-0"}`}
+      className={`fixed 
+        top-0 md:top-16 right-0 md:right-8 
+        w-screen md:w-[500px] 
+        h-screen md:h-[85vh] 
+        bg-white rounded-none md:rounded-2xl shadow-2xl 
+        flex flex-col z-50
+        transform transition-transform duration-500 ease-out
+        ${visible ? "translate-x-0 opacity-100" : "translate-x-full opacity-0"}`}
+      style={{
+        // ensures safe padding on notched devices
+        paddingTop: "env(safe-area-inset-top)",
+        paddingBottom: "env(safe-area-inset-bottom)",
+      }}
     >
       {/* Header */}
-      <div className="p-3 bg-blue-600 text-white font-bold flex justify-between items-center rounded-t-2xl text-sm md:text-base">
+      <div className="p-3 bg-blue-600 text-white font-bold flex justify-between items-center md:rounded-t-2xl text-sm md:text-base">
         <span>ASK LIHANA</span>
-        <button onClick={onClose} className="text-white hover:text-gray-300 text-xl leading-none">
+        <button
+          onClick={onClose}
+          className="text-white hover:text-gray-300 text-xl leading-none"
+        >
           &times;
         </button>
       </div>
@@ -234,36 +256,44 @@ console.log("BACKEND_URL:", BACKEND_URL);
               <div>
                 <div
                   className={`px-3 py-2 md:px-4 md:py-2.5 rounded-2xl max-w-[70%] md:max-w-xs shadow-sm ${
-                    msg.from === "bot" ? "bg-gray-100" : "bg-blue-600 text-white"
+                    msg.from === "bot"
+                      ? "bg-gray-100"
+                      : "bg-blue-600 text-white"
                   }`}
                 >
                   {msg.from === "bot" ? (
-                    <div dangerouslySetInnerHTML={{ __html: renderMessage(msg.text) }} />
+                    <div
+                      dangerouslySetInnerHTML={{ __html: renderMessage(msg.text) }}
+                    />
                   ) : (
                     <div>{msg.text}</div>
                   )}
                 </div>
-                <div className="text-gray-400 mt-1 text-[10px] md:text-xs">{formatTimestamp(msg.timestamp)}</div>
+                <div className="text-gray-400 mt-1 text-[10px] md:text-xs">
+                  {formatTimestamp(msg.timestamp)}
+                </div>
               </div>
             </div>
 
             {/* Suggestions */}
-            {msg.from === "bot" && msg.suggestions?.length > 0 && index === messages.length - 1 && (
-              <div className="pl-10 md:pl-14 flex flex-col gap-1 md:gap-2">
-                <div className="text-blue-700 font-semibold text-xs md:text-sm">
-                  Did you mean one of the following?
+            {msg.from === "bot" &&
+              msg.suggestions?.length > 0 &&
+              index === messages.length - 1 && (
+                <div className="pl-10 md:pl-14 flex flex-col gap-1 md:gap-2">
+                  <div className="text-blue-700 font-semibold text-xs md:text-sm">
+                    Did you mean one of the following?
+                  </div>
+                  {msg.suggestions.map((s, i) => (
+                    <button
+                      key={i}
+                      onClick={() => handleSuggestionClick(s.intent)}
+                      className="px-2 py-1 md:px-3 md:py-1 border border-blue-600 text-blue-600 rounded hover:bg-blue-50 transition text-left text-[10px] md:text-sm"
+                    >
+                      {s.text}
+                    </button>
+                  ))}
                 </div>
-                {msg.suggestions.map((s, i) => (
-                  <button
-                    key={i}
-                    onClick={() => handleSuggestionClick(s.intent)}
-                    className="px-2 py-1 md:px-3 md:py-1 border border-blue-600 text-blue-600 rounded hover:bg-blue-50 transition text-left text-[10px] md:text-sm"
-                  >
-                    {s.text}
-                  </button>
-                ))}
-              </div>
-            )}
+              )}
           </div>
         ))}
 
@@ -279,7 +309,7 @@ console.log("BACKEND_URL:", BACKEND_URL);
       </div>
 
       {/* Input + icons */}
-      <div className="p-2 md:p-3 border-t flex flex-col gap-1 md:gap-2 relative">
+      <div className="p-2 md:p-3 border-t flex flex-col gap-1 md:gap-2 relative bg-white">
         <div className="w-full bg-gray-100 rounded-xl px-2 py-2 md:px-3 md:py-3 flex flex-col gap-1 md:gap-1.5 relative">
           <div className="flex items-center gap-1 md:gap-2 relative w-full">
             <input
@@ -328,7 +358,11 @@ console.log("BACKEND_URL:", BACKEND_URL);
                 if (file) {
                   setMessages((prev) => [
                     ...prev,
-                    { from: "user", text: `📎 ${file.name}`, timestamp: new Date().toISOString() },
+                    {
+                      from: "user",
+                      text: `📎 ${file.name}`,
+                      timestamp: new Date().toISOString(),
+                    },
                   ]);
                 }
               }}
@@ -336,7 +370,9 @@ console.log("BACKEND_URL:", BACKEND_URL);
             <button
               className="w-5 h-5 md:w-6 md:h-6 flex items-center justify-center hover:bg-gray-200 rounded-full transition"
               title="Attachment"
-              onClick={() => document.getElementById("attachmentInput")?.click()}
+              onClick={() =>
+                document.getElementById("attachmentInput")?.click()
+              }
             >
               <PaperClipIcon className="w-4 h-4 md:w-5 md:h-5 text-gray-700" />
             </button>
@@ -352,7 +388,10 @@ console.log("BACKEND_URL:", BACKEND_URL);
 
           {/* Emoji Picker */}
           {showEmojiPicker && (
-            <div ref={emojiPickerRef} className="absolute bottom-14 left-2 md:left-3 z-50">
+            <div
+              ref={emojiPickerRef}
+              className="absolute bottom-14 left-2 md:left-3 z-50"
+            >
               <Picker
                 onEmojiClick={(emojiObject) => {
                   setInput((prev) => prev + emojiObject.emoji);
