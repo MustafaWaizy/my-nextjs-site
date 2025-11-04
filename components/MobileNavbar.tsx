@@ -76,6 +76,19 @@ export default function MobileNavbar() {
     }
   };
 
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: { staggerChildren: 0.08, delayChildren: 0.1 },
+    },
+  };
+
+  const itemVariants = {
+    hidden: { opacity: 0, x: 30 },
+    visible: { opacity: 1, x: 0, transition: { duration: 0.3, ease: "easeOut" } },
+  };
+
   return (
     <nav className="md:hidden sticky top-0 z-50 w-full font-poppins">
       {/* --- TOP BLUE BAR --- */}
@@ -129,8 +142,7 @@ export default function MobileNavbar() {
       </AnimatePresence>
 
       {/* --- BOTTOM WHITE BAR WITH LOGO AND HAMBURGER --- */}
-      <div className="bg-white shadow-md py-4 relative rounded-lg px-4 flex items-center justify-between">
-        {/* LOGO */}
+      <div className="bg-white shadow-md py-4 px-4 flex items-center justify-between">
         <Link href="/">
           <Image
             src="/logo.png"
@@ -140,8 +152,6 @@ export default function MobileNavbar() {
             className="object-contain cursor-pointer"
           />
         </Link>
-
-        {/* HAMBURGER MENU */}
         <button className="text-gray-700 text-3xl" onClick={() => setIsOpen(!isOpen)}>
           ☰
         </button>
@@ -172,54 +182,79 @@ export default function MobileNavbar() {
         )}
       </AnimatePresence>
 
-      {/* --- SLIDE-IN SIDE DRAWER --- */}
+      {/* --- SLIDE-IN SIDE DRAWER WITH SOFT NEON HOVER LINE --- */}
       <AnimatePresence>
         {isOpen && (
-          <motion.div
+          <motion.aside
             initial={{ x: "100%" }}
             animate={{ x: 0 }}
             exit={{ x: "100%" }}
-            transition={{ type: "tween", duration: 0.3 }}
-            className="fixed top-0 right-0 h-full w-4/5 bg-white shadow-xl z-50 p-6 flex flex-col space-y-4"
+            transition={{ type: "tween", duration: 0.35 }}
+            className="fixed top-0 right-0 h-full w-4/5 z-50 p-6 bg-gradient-to-b from-cyan-100 via-blue-100 to-purple-100 text-gray-800 shadow-xl overflow-y-auto"
           >
-            <button onClick={closeMenus} className="self-end text-2xl">✕</button>
-            <Link href="/" onClick={closeMenus} className="block py-2 px-3 rounded hover:bg-gray-100">
-              Home
-            </Link>
+            <button
+              onClick={closeMenus}
+              className="absolute top-4 right-4 text-gray-700 text-2xl hover:text-blue-600 transition"
+            >
+              ✕
+            </button>
 
-            {menuItems.map((menu) => (
-              <div key={menu.key}>
-                <button
-                  onClick={() => toggleDropdown(menu.key)}
-                  className="w-full text-left font-semibold py-2 px-3 rounded hover:bg-gray-100"
+            <motion.div
+              variants={containerVariants}
+              initial="hidden"
+              animate="visible"
+              className="mt-10 space-y-4 text-gray-800"
+            >
+              {/* HOME */}
+              <motion.div variants={itemVariants} className="relative group">
+                <Link
+                  href="/"
+                  onClick={closeMenus}
+                  className="block py-2 px-3 rounded hover:text-blue-600 transition relative"
                 >
-                  {menu.title}
-                </button>
-                <AnimatePresence>
-                  {activeDropdown === menu.key && (
-                    <motion.div
-                      initial={{ opacity: 0, y: -5 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, y: -5 }}
-                      transition={{ duration: 0.2 }}
-                      className="ml-4 space-y-1"
-                    >
-                      {menu.links.map((link) => (
-                        <Link
-                          key={link.href}
-                          href={link.href}
-                          onClick={closeMenus}
-                          className="block py-2 px-3 rounded hover:bg-gray-100"
-                        >
-                          {link.label}
-                        </Link>
-                      ))}
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-              </div>
-            ))}
-          </motion.div>
+                  Home
+                  {/* Soft glowing neon line */}
+                  <span className="absolute left-0 bottom-0 w-0 h-0.5 bg-gradient-to-r from-cyan-400 via-blue-500 to-purple-500 group-hover:w-full transition-all duration-300 rounded-full blur-[2px] opacity-90" />
+                </Link>
+              </motion.div>
+
+              {menuItems.map((menu) => (
+                <motion.div key={menu.key} variants={itemVariants} className="relative group">
+                  <button
+                    onClick={() => toggleDropdown(menu.key)}
+                    className="w-full text-left font-semibold py-2 px-3 rounded hover:text-blue-600 transition relative"
+                  >
+                    {menu.title}
+                    <span className="absolute left-0 bottom-0 w-0 h-0.5 bg-gradient-to-r from-cyan-400 via-blue-500 to-purple-500 group-hover:w-full transition-all duration-300 rounded-full blur-[2px] opacity-90" />
+                  </button>
+
+                  <AnimatePresence>
+                    {activeDropdown === menu.key && (
+                      <motion.div
+                        initial={{ opacity: 0, y: -5 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -5 }}
+                        transition={{ duration: 0.25 }}
+                        className="ml-4 space-y-1"
+                      >
+                        {menu.links.map((link) => (
+                          <Link
+                            key={link.href}
+                            href={link.href}
+                            onClick={closeMenus}
+                            className="block py-2 px-3 rounded text-sm hover:text-blue-600 relative group"
+                          >
+                            {link.label}
+                            <span className="absolute left-0 bottom-0 w-0 h-0.5 bg-gradient-to-r from-cyan-400 via-blue-500 to-purple-500 group-hover:w-full transition-all duration-300 rounded-full blur-[2px] opacity-90" />
+                          </Link>
+                        ))}
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </motion.div>
+              ))}
+            </motion.div>
+          </motion.aside>
         )}
       </AnimatePresence>
     </nav>
