@@ -19,8 +19,8 @@ const poppins = Poppins({
 });
 
 export const metadata: Metadata = {
-  title: "My Website",
-  description: "Modern frontend built with Next.js + Tailwind + Framer Motion",
+  title: "LinorAI - AI & Technology Solutions Company",
+  description: "LinorAI delivers cutting-edge AI, IT, and digital solutions to help businesses innovate, automate, and grow in the modern era.",
   icons: {
     icon: "/icon.png",
     shortcut: "/icon.png",
