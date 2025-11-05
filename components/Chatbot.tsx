@@ -64,8 +64,7 @@ const Chatbot: FC<ChatbotProps> = ({ visible, onClose }) => {
     );
     processed = processed.replace(
       /([a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,})/g,
-      (email) =>
-        `<a href="mailto:${email}" class="text-blue-600 underline">${email}</a>`
+      (email) => `<a href="mailto:${email}" class="text-blue-600 underline">${email}</a>`
     );
     return processed;
   };
@@ -311,17 +310,33 @@ const Chatbot: FC<ChatbotProps> = ({ visible, onClose }) => {
       {/* Input + icons */}
       <div className="p-2 md:p-3 border-t flex flex-col gap-1 md:gap-2 relative bg-white">
         <div className="w-full bg-gray-100 rounded-xl px-2 py-2 md:px-3 md:py-3 flex flex-col gap-1 md:gap-1.5 relative">
-          <div className="flex items-center gap-1 md:gap-2 relative w-full">
+          {/* --- FORM: captures Enter/Send from mobile keyboards and desktop Enter --- */}
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              sendMessage();
+            }}
+            className="flex items-center gap-1 md:gap-2 relative w-full"
+          >
             <input
+              name="chatInput"
               value={input}
               onChange={(e) => setInput(e.target.value)}
-              onKeyDown={(e) => e.key === "Enter" && sendMessage()}
-              className="flex-1 bg-transparent outline-none placeholder-gray-500 text-xs md:text-sm pr-10"
+              onKeyDown={(e) => {
+                // keep fallback: if user presses Enter with modifier, ignore; otherwise form submit handles it
+                if (e.key === "Enter" && (e.ctrlKey || e.shiftKey || e.altKey)) {
+                  return;
+                }
+              }}
+              inputMode="text"
+              autoComplete="off"
+              className="flex-1 bg-transparent outline-none placeholder-gray-500 text-[16px] md:text-sm pr-10"
               placeholder="Ask a question..."
             />
 
-            {/* Voice button */}
+            {/* Voice button (type=button to avoid submitting) */}
             <button
+              type="button"
               className="absolute right-10 md:right-12 w-6 h-6 md:w-8 md:h-8 flex items-center justify-center bg-gray-200 hover:bg-gray-300 rounded-full transition"
               title="Voice"
               onClick={() => alert("Voice input coming soon!")}
@@ -329,15 +344,15 @@ const Chatbot: FC<ChatbotProps> = ({ visible, onClose }) => {
               <MicrophoneIcon className="w-3 h-3 md:w-4 md:h-4 text-gray-700" />
             </button>
 
-            {/* Send button */}
+            {/* Send button (submits form) */}
             <button
-              onClick={sendMessage}
+              type="submit"
               className="w-6 h-6 md:w-8 md:h-8 flex items-center justify-center bg-blue-600 hover:bg-blue-700 rounded-full transition"
               title="Send"
             >
               <ArrowUpCircleIcon className="w-4 h-4 md:w-5 md:h-5 text-white" />
             </button>
-          </div>
+          </form>
 
           {/* Icons row */}
           <div className="flex items-center gap-1 md:gap-2 mt-1">
@@ -370,9 +385,7 @@ const Chatbot: FC<ChatbotProps> = ({ visible, onClose }) => {
             <button
               className="w-5 h-5 md:w-6 md:h-6 flex items-center justify-center hover:bg-gray-200 rounded-full transition"
               title="Attachment"
-              onClick={() =>
-                document.getElementById("attachmentInput")?.click()
-              }
+              onClick={() => document.getElementById("attachmentInput")?.click()}
             >
               <PaperClipIcon className="w-4 h-4 md:w-5 md:h-5 text-gray-700" />
             </button>
