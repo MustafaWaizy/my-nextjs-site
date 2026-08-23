@@ -6,7 +6,6 @@ import Navbar from "../components/NavbarWrapper";
 import Footer from "../components/Footer";
 import ChatWrapper from "../components/ChatWrapper";
 import Preloader from "../components/Preloader";
-import FaqChatWidget from "../components/FaqChatWidget";
 
 // Load Inter (existing)
 const inter = Inter({ subsets: ["latin"] });
@@ -48,7 +47,6 @@ export default function RootLayout({
           <main className="min-h-screen">{children}</main>
           <Footer />
           <ChatWrapper />
-          <FaqChatWidget />
         </div>
       </body>
     </html>
