@@ -1,6 +1,14 @@
 "use client";
 
-import { FC, FormEvent, useEffect, useRef, useState } from "react";
+import {
+  FC,
+  FormEvent,
+  ReactNode,
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
 import {
   PaperClipIcon,
   PhotoIcon,
@@ -17,17 +25,30 @@ interface Suggestion {
   text: string;
 }
 
+interface ChatAttachment {
+  name: string;
+  type: string;
+  size: number;
+  dataUrl?: string;
+}
+
 interface Message {
   id: string;
   from: "user" | "bot";
   text: string;
   timestamp: string;
   suggestions?: Suggestion[];
+  attachments?: ChatAttachment[];
 }
 
 interface ChatbotProps {
   visible: boolean;
   onClose: () => void;
+}
+
+interface BackendResponse {
+  response?: unknown;
+  suggestions?: unknown;
 }
 
 const QUICK_QUESTIONS = [
@@ -47,6 +68,28 @@ const INITIAL_GREETING: Message = {
 const FALLBACK_REPLY =
   "I'm sorry, I couldn't process that right now. Please try again or contact the LinorAI team directly.";
 
+const SUPPORT_EMAIL = "info@linorai.ai";
+
+const MAX_ATTACHMENT_SIZE = 10 * 1024 * 1024;
+
+const ACCEPTED_FILE_TYPES = [
+  "image/*",
+  "application/pdf",
+  "text/plain",
+  "text/csv",
+  "application/json",
+  "application/msword",
+  "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+  "application/vnd.ms-excel",
+  "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+];
+
+const URL_REGEX =
+  /https?:\/\/[^\s<>"']+/gi;
+
+const EMAIL_REGEX =
+  /[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/g;
+
 const Chatbot: FC<ChatbotProps> = ({ visible, onClose }) => {
   const [input, setInput] = useState("");
   const [messages, setMessages] = useState<Message[]>([]);
@@ -59,249 +102,464 @@ const Chatbot: FC<ChatbotProps> = ({ visible, onClose }) => {
   const chatContainerRef = useRef<HTMLDivElement>(null);
   const emojiPickerRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  const attachmentInputRef = useRef<HTMLInputElement>(null);
 
-  // ============================================================
-  // BACKEND URL
-  // ============================================================
+  const typingTimerRef = useRef<number | null>(null);
+  const scrollTimerRef = useRef<number | null>(null);
 
-  const BACKEND_URL = (() => {
-    if (typeof window === "undefined") {
-      return (
-        process.env.NEXT_PUBLIC_BACKEND_URL ||
-        "http://54.162.102.115"
-      );
-    }
+  /*
+   * ---------------------------------------------------------------
+   * TIMESTAMP
+   * ---------------------------------------------------------------
+   */
 
-    if (
-      window.location.hostname === "localhost" ||
-      window.location.hostname === "127.0.0.1"
-    ) {
-      return "http://localhost:8000";
-    }
-
-    return (
-      process.env.NEXT_PUBLIC_BACKEND_URL ||
-      "http://54.162.102.115"
-    );
-  })();
-
-  // ============================================================
-  // TIMESTAMP
-  // ============================================================
-
-  const formatTimestamp = (isoString: string) => {
+  const formatTimestamp = useCallback((isoString: string) => {
     const date = new Date(isoString);
+
+    if (Number.isNaN(date.getTime())) {
+      return "";
+    }
 
     return date.toLocaleTimeString([], {
       hour: "2-digit",
       minute: "2-digit",
     });
-  };
+  }, []);
 
-  // ============================================================
-  // MESSAGE RENDERING
-  // ============================================================
+  /*
+   * ---------------------------------------------------------------
+   * SAFE MESSAGE RENDERING
+   *
+   * No dangerouslySetInnerHTML.
+   * URLs and email addresses are converted into React elements.
+   * ---------------------------------------------------------------
+   */
 
-  const escapeHtml = (text: string) => {
-    return text
-      .replace(/&/g, "&amp;")
-      .replace(/</g, "&lt;")
-      .replace(/>/g, "&gt;")
-      .replace(/"/g, "&quot;")
-      .replace(/'/g, "&#039;");
-  };
-
-  const renderMessage = (text: string) => {
-    let processed = escapeHtml(text);
-
-    // URLs
-    processed = processed.replace(
-      /(https?:\/\/[^\s<]+)/g,
-      (url) =>
-        `<a href="${url}" class="text-blue-600 underline hover:text-blue-800 break-all" target="_blank" rel="noopener noreferrer">${url}</a>`
-    );
-
-    // Email addresses
-    processed = processed.replace(
-      /([a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,})/g,
-      (email) =>
-        `<a href="mailto:${email}" class="text-blue-600 underline hover:text-blue-800">${email}</a>`
-    );
-
-    return processed;
-  };
-
-  // ============================================================
-  // SCROLL ONLY THE CHAT CONTAINER
-  // ============================================================
-
-  const scrollToBottom = (smooth = true) => {
-    const container = chatContainerRef.current;
-
-    if (!container) return;
-
-    requestAnimationFrame(() => {
-      container.scrollTo({
-        top: container.scrollHeight,
-        behavior: smooth ? "smooth" : "auto",
-      });
-    });
-  };
-
-  // ============================================================
-  // SEND MESSAGE TO BACKEND
-  // ============================================================
-
-  const sendMessageToBackend = async (
-    messageText: string,
-    currentMessages: Message[]
-  ) => {
-    const history = currentMessages.slice(-12).map((message) => ({
-      role: message.from === "bot" ? "assistant" : "user",
-      content: message.text,
-    }));
-
-    const response = await fetch(`${BACKEND_URL}/chat`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        message: messageText,
-        history,
-      }),
-    });
-
-    if (!response.ok) {
-      throw new Error(`Backend returned ${response.status}`);
+  const renderMessage = useCallback((text: string): ReactNode[] => {
+    if (!text) {
+      return [];
     }
 
-    const data = await response.json();
+    const combinedRegex = new RegExp(
+      `(${URL_REGEX.source})|(${EMAIL_REGEX.source})`,
+      "gi"
+    );
 
-    return {
-      response:
-        typeof data?.response === "string"
-          ? data.response
-          : FALLBACK_REPLY,
+    const parts: ReactNode[] = [];
+    let lastIndex = 0;
+    let match: RegExpExecArray | null;
 
-      suggestions: Array.isArray(data?.suggestions)
-        ? data.suggestions
-        : [],
-    };
-  };
+    combinedRegex.lastIndex = 0;
 
-  // ============================================================
-  // SEND USER MESSAGE
-  // ============================================================
+    while ((match = combinedRegex.exec(text)) !== null) {
+      const matchStart = match.index;
+      const matchEnd = combinedRegex.lastIndex;
 
-  const sendMessage = async (text?: string) => {
-    const messageText = (text ?? input).trim();
+      if (matchStart > lastIndex) {
+        parts.push(
+          <span key={`text-${lastIndex}`}>
+            {text.slice(lastIndex, matchStart)}
+          </span>
+        );
+      }
 
-    if (!messageText || typing) {
+      const value = match[0];
+
+      const isUrl = /^https?:\/\//i.test(value);
+
+      if (isUrl) {
+        parts.push(
+          <a
+            key={`url-${matchStart}`}
+            href={value}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-blue-600 underline hover:text-blue-800 break-all"
+          >
+            {value}
+          </a>
+        );
+      } else {
+        parts.push(
+          <a
+            key={`email-${matchStart}`}
+            href={`mailto:${value}`}
+            className="text-blue-600 underline hover:text-blue-800 break-all"
+          >
+            {value}
+          </a>
+        );
+      }
+
+      lastIndex = matchEnd;
+    }
+
+    if (lastIndex < text.length) {
+      parts.push(
+        <span key={`text-${lastIndex}`}>
+          {text.slice(lastIndex)}
+        </span>
+      );
+    }
+
+    return parts;
+  }, []);
+
+  /*
+   * ---------------------------------------------------------------
+   * SCROLL CHAT CONTAINER
+   * ---------------------------------------------------------------
+   */
+
+  const scrollToBottom = useCallback((smooth = true) => {
+    const container = chatContainerRef.current;
+
+    if (!container) {
       return;
     }
 
-    const userMessage: Message = {
-      id: `${Date.now()}-user`,
-      from: "user",
-      text: messageText,
-      timestamp: new Date().toISOString(),
-    };
-
-    const nextMessages = [...messages, userMessage];
-
-    // Immediately show user message
-    setMessages(nextMessages);
-
-    // Clear input
-    setInput("");
-
-    // Close auxiliary UI
-    setShowEmojiPicker(false);
-    setShowGifPopup(false);
-
-    // Show typing
-    setTyping(true);
-
-    // Scroll only chat panel
-    scrollToBottom();
-
-    try {
-      const result = await sendMessageToBackend(
-        messageText,
-        nextMessages
-      );
-
-      const botMessage: Message = {
-        id: `${Date.now()}-bot`,
-        from: "bot",
-        text: result.response,
-        timestamp: new Date().toISOString(),
-        suggestions: result.suggestions,
-      };
-
-      setMessages((prev) => [...prev, botMessage]);
-
-      // Scroll after bot response
-      setTimeout(() => {
-        scrollToBottom();
-      }, 50);
-    } catch (error) {
-      console.error("LIHANA backend error:", error);
-
-      const errorMessage: Message = {
-        id: `${Date.now()}-error`,
-        from: "bot",
-        text:
-          "I'm having trouble connecting to the LIHANA service right now. Please try again in a moment or contact the LinorAI team directly.",
-        timestamp: new Date().toISOString(),
-      };
-
-      setMessages((prev) => [...prev, errorMessage]);
-
-      setTimeout(() => {
-        scrollToBottom();
-      }, 50);
-    } finally {
-      setTyping(false);
-
-      // Return focus to input
-      setTimeout(() => {
-        inputRef.current?.focus();
-      }, 50);
+    if (scrollTimerRef.current !== null) {
+      window.clearTimeout(scrollTimerRef.current);
     }
-  };
 
-  // ============================================================
-  // QUICK QUESTION
-  // ============================================================
+    scrollTimerRef.current = window.setTimeout(() => {
+      requestAnimationFrame(() => {
+        container.scrollTo({
+          top: container.scrollHeight,
+          behavior: smooth ? "smooth" : "auto",
+        });
+      });
+    }, 0);
+  }, []);
 
-  const handleQuickQuestion = async (question: string) => {
-    await sendMessage(question);
-  };
+  /*
+   * ---------------------------------------------------------------
+   * FILE HELPERS
+   * ---------------------------------------------------------------
+   */
 
-  // ============================================================
-  // BACKEND SUGGESTION
-  // ============================================================
+  const fileToDataUrl = useCallback(
+    (file: File): Promise<string> =>
+      new Promise((resolve, reject) => {
+        const reader = new FileReader();
 
-  const handleSuggestionClick = async (intent: string) => {
-    await sendMessage(intent);
-  };
+        reader.onload = () => {
+          if (typeof reader.result === "string") {
+            resolve(reader.result);
+          } else {
+            reject(new Error("Unable to read the selected file."));
+          }
+        };
 
-  // ============================================================
-  // FORM SUBMIT
-  // ============================================================
+        reader.onerror = () => {
+          reject(
+            reader.error ||
+              new Error("Unable to read the selected file.")
+          );
+        };
 
-  const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    event.stopPropagation();
+        reader.readAsDataURL(file);
+      }),
+    []
+  );
 
-    sendMessage();
-  };
+  /*
+   * ---------------------------------------------------------------
+   * SEND MESSAGE TO NEXT.JS API
+   * ---------------------------------------------------------------
+   */
 
-  // ============================================================
-  // INITIAL GREETING
-  // ============================================================
+  const sendMessageToBackend = useCallback(
+    async (
+      messageText: string,
+      currentMessages: Message[],
+      attachments: ChatAttachment[] = []
+    ) => {
+      const history = currentMessages.slice(-12).map((message) => ({
+        role: message.from === "bot" ? "assistant" : "user",
+        content: message.text,
+      }));
+
+      const response = await fetch("/api/chat", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          message: messageText,
+          history,
+          attachments,
+        }),
+      });
+
+      if (!response.ok) {
+        let errorMessage = `API returned ${response.status}`;
+
+        try {
+          const errorData: unknown = await response.json();
+
+          if (
+            typeof errorData === "object" &&
+            errorData !== null &&
+            "error" in errorData &&
+            typeof errorData.error === "string"
+          ) {
+            errorMessage = errorData.error;
+          }
+        } catch {
+          // Ignore invalid error responses.
+        }
+
+        throw new Error(errorMessage);
+      }
+
+      const data: BackendResponse = await response.json();
+
+      const responseText =
+        typeof data.response === "string" &&
+        data.response.trim()
+          ? data.response
+          : FALLBACK_REPLY;
+
+      const suggestions: Suggestion[] = Array.isArray(
+        data.suggestions
+      )
+        ? data.suggestions
+            .filter(
+              (item: unknown): item is Suggestion =>
+                typeof item === "object" &&
+                item !== null &&
+                typeof (item as Suggestion).intent === "string" &&
+                typeof (item as Suggestion).text === "string"
+            )
+            .slice(0, 3)
+        : [];
+
+      return {
+        response: responseText,
+        suggestions,
+      };
+    },
+    []
+  );
+
+  /*
+   * ---------------------------------------------------------------
+   * SEND MESSAGE
+   * ---------------------------------------------------------------
+   */
+
+  const sendMessage = useCallback(
+    async (
+      text?: string,
+      attachments: ChatAttachment[] = []
+    ) => {
+      const messageText = (text ?? input).trim();
+
+      if (
+        (!messageText && attachments.length === 0) ||
+        typing
+      ) {
+        return;
+      }
+
+      const userMessage: Message = {
+        id: `${Date.now()}-user`,
+        from: "user",
+        text:
+          messageText ||
+          "I've attached a file for you to review.",
+        timestamp: new Date().toISOString(),
+        attachments:
+          attachments.length > 0 ? attachments : undefined,
+      };
+
+      const nextMessages = [...messages, userMessage];
+
+      setMessages(nextMessages);
+      setInput("");
+      setShowEmojiPicker(false);
+      setShowGifPopup(false);
+      setTyping(true);
+
+      scrollToBottom();
+
+      try {
+        const result = await sendMessageToBackend(
+          messageText ||
+            "Please review the attached file.",
+          nextMessages,
+          attachments
+        );
+
+        const botMessage: Message = {
+          id: `${Date.now()}-bot`,
+          from: "bot",
+          text: result.response,
+          timestamp: new Date().toISOString(),
+          suggestions: result.suggestions,
+        };
+
+        setMessages((previous) => [
+          ...previous,
+          botMessage,
+        ]);
+
+        window.setTimeout(() => {
+          scrollToBottom();
+        }, 50);
+      } catch (error) {
+        console.error("LIHANA API error:", error);
+
+        const errorMessage: Message = {
+          id: `${Date.now()}-error`,
+          from: "bot",
+          text:
+            `I'm having trouble connecting to the LIHANA service right now. ` +
+            `Please try again in a moment or contact the LinorAI team directly at ${SUPPORT_EMAIL}.`,
+          timestamp: new Date().toISOString(),
+        };
+
+        setMessages((previous) => [
+          ...previous,
+          errorMessage,
+        ]);
+
+        window.setTimeout(() => {
+          scrollToBottom();
+        }, 50);
+      } finally {
+        setTyping(false);
+
+        window.setTimeout(() => {
+          inputRef.current?.focus();
+        }, 50);
+      }
+    },
+    [
+      input,
+      messages,
+      scrollToBottom,
+      sendMessageToBackend,
+      typing,
+    ]
+  );
+
+  /*
+   * ---------------------------------------------------------------
+   * QUICK QUESTION
+   * ---------------------------------------------------------------
+   */
+
+  const handleQuickQuestion = useCallback(
+    async (question: string) => {
+      await sendMessage(question);
+    },
+    [sendMessage]
+  );
+
+  /*
+   * ---------------------------------------------------------------
+   * AI SUGGESTION
+   * ---------------------------------------------------------------
+   */
+
+  const handleSuggestionClick = useCallback(
+    async (intent: string) => {
+      await sendMessage(intent);
+    },
+    [sendMessage]
+  );
+
+  /*
+   * ---------------------------------------------------------------
+   * FORM SUBMIT
+   * ---------------------------------------------------------------
+   */
+
+  const handleSubmit = useCallback(
+    (event: FormEvent<HTMLFormElement>) => {
+      event.preventDefault();
+      event.stopPropagation();
+
+      void sendMessage();
+    },
+    [sendMessage]
+  );
+
+  /*
+   * ---------------------------------------------------------------
+   * ATTACH FILE
+   * ---------------------------------------------------------------
+   */
+
+  const handleAttachmentChange = useCallback(
+    async (event: React.ChangeEvent<HTMLInputElement>) => {
+      const file = event.target.files?.[0];
+
+      if (!file) {
+        return;
+      }
+
+      event.target.value = "";
+
+      if (file.size > MAX_ATTACHMENT_SIZE) {
+        const errorMessage: Message = {
+          id: `${Date.now()}-attachment-error`,
+          from: "bot",
+          text:
+            "That file is too large. Please select a file smaller than 10 MB.",
+          timestamp: new Date().toISOString(),
+        };
+
+        setMessages((previous) => [
+          ...previous,
+          errorMessage,
+        ]);
+
+        return;
+      }
+
+      try {
+        setTyping(true);
+
+        const dataUrl = await fileToDataUrl(file);
+
+        const attachment: ChatAttachment = {
+          name: file.name,
+          type: file.type || "application/octet-stream",
+          size: file.size,
+          dataUrl,
+        };
+
+        await sendMessage(undefined, [attachment]);
+      } catch (error) {
+        console.error("Attachment error:", error);
+
+        const errorMessage: Message = {
+          id: `${Date.now()}-attachment-error`,
+          from: "bot",
+          text:
+            "I couldn't read that file. Please try another file.",
+          timestamp: new Date().toISOString(),
+        };
+
+        setMessages((previous) => [
+          ...previous,
+          errorMessage,
+        ]);
+
+        setTyping(false);
+      }
+    },
+    [fileToDataUrl, sendMessage]
+  );
+
+  /*
+   * ---------------------------------------------------------------
+   * INITIAL GREETING
+   * ---------------------------------------------------------------
+   */
 
   useEffect(() => {
     if (!visible || initialized) {
@@ -310,7 +568,7 @@ const Chatbot: FC<ChatbotProps> = ({ visible, onClose }) => {
 
     setShowTyping(true);
 
-    const timer = window.setTimeout(() => {
+    typingTimerRef.current = window.setTimeout(() => {
       setMessages([
         {
           ...INITIAL_GREETING,
@@ -321,47 +579,72 @@ const Chatbot: FC<ChatbotProps> = ({ visible, onClose }) => {
       setShowTyping(false);
       setInitialized(true);
 
-      setTimeout(() => {
+      window.setTimeout(() => {
         scrollToBottom(false);
         inputRef.current?.focus();
       }, 50);
     }, 900);
 
     return () => {
-      window.clearTimeout(timer);
+      if (typingTimerRef.current !== null) {
+        window.clearTimeout(typingTimerRef.current);
+      }
     };
-  }, [visible, initialized]);
+  }, [
+    initialized,
+    scrollToBottom,
+    visible,
+  ]);
 
-  // ============================================================
-  // SCROLL WHEN MESSAGES CHANGE
-  // ============================================================
+  /*
+   * ---------------------------------------------------------------
+   * SCROLL WHEN MESSAGES CHANGE
+   * ---------------------------------------------------------------
+   */
 
   useEffect(() => {
-    if (!visible) return;
+    if (!visible) {
+      return;
+    }
 
     scrollToBottom();
-  }, [messages, typing]);
+  }, [
+    messages,
+    typing,
+    visible,
+    scrollToBottom,
+  ]);
 
-  // ============================================================
-  // CLOSE EMOJI PICKER WHEN CLICKING OUTSIDE
-  // ============================================================
+  /*
+   * ---------------------------------------------------------------
+   * CLOSE EMOJI PICKER OUTSIDE CLICK
+   * ---------------------------------------------------------------
+   */
 
   useEffect(() => {
+    if (!showEmojiPicker) {
+      return;
+    }
+
     const handleClickOutside = (event: MouseEvent) => {
+      const target = event.target;
+
+      if (!(target instanceof Node)) {
+        return;
+      }
+
       if (
         emojiPickerRef.current &&
-        !emojiPickerRef.current.contains(event.target as Node)
+        !emojiPickerRef.current.contains(target)
       ) {
         setShowEmojiPicker(false);
       }
     };
 
-    if (showEmojiPicker) {
-      document.addEventListener(
-        "mousedown",
-        handleClickOutside
-      );
-    }
+    document.addEventListener(
+      "mousedown",
+      handleClickOutside
+    );
 
     return () => {
       document.removeEventListener(
@@ -371,9 +654,11 @@ const Chatbot: FC<ChatbotProps> = ({ visible, onClose }) => {
     };
   }, [showEmojiPicker]);
 
-  // ============================================================
-  // LOCK BODY SCROLL ON MOBILE WHILE CHAT IS OPEN
-  // ============================================================
+  /*
+   * ---------------------------------------------------------------
+   * MOBILE BODY SCROLL LOCK
+   * ---------------------------------------------------------------
+   */
 
   useEffect(() => {
     if (!visible) {
@@ -386,7 +671,8 @@ const Chatbot: FC<ChatbotProps> = ({ visible, onClose }) => {
       return;
     }
 
-    const originalOverflow = document.body.style.overflow;
+    const originalOverflow =
+      document.body.style.overflow;
 
     document.body.style.overflow = "hidden";
 
@@ -395,26 +681,50 @@ const Chatbot: FC<ChatbotProps> = ({ visible, onClose }) => {
     };
   }, [visible]);
 
-  // ============================================================
-  // DO NOT RENDER WHEN CLOSED
-  // ============================================================
+  /*
+   * ---------------------------------------------------------------
+   * CLEANUP
+   * ---------------------------------------------------------------
+   */
+
+  useEffect(() => {
+    return () => {
+      if (typingTimerRef.current !== null) {
+        window.clearTimeout(typingTimerRef.current);
+      }
+
+      if (scrollTimerRef.current !== null) {
+        window.clearTimeout(scrollTimerRef.current);
+      }
+    };
+  }, []);
+
+  /*
+   * ---------------------------------------------------------------
+   * DO NOT RENDER WHEN CLOSED
+   * ---------------------------------------------------------------
+   */
 
   if (!visible) {
     return null;
   }
 
-  // ============================================================
-  // QUICK QUESTIONS
-  // ============================================================
+  /*
+   * ---------------------------------------------------------------
+   * FIRST-TIME QUICK QUESTIONS
+   * ---------------------------------------------------------------
+   */
 
   const showQuickQuestions =
     messages.length === 1 &&
     !typing &&
     !showTyping;
 
-  // ============================================================
-  // UI
-  // ============================================================
+  /*
+   * ---------------------------------------------------------------
+   * UI
+   * ---------------------------------------------------------------
+   */
 
   return (
     <div
@@ -436,19 +746,13 @@ const Chatbot: FC<ChatbotProps> = ({ visible, onClose }) => {
         flex-col
         z-[9999]
         overflow-hidden
-        transform
-        transition-transform
-        duration-300
-        ease-out
       "
       style={{
         paddingTop: "env(safe-area-inset-top)",
         paddingBottom: "env(safe-area-inset-bottom)",
       }}
     >
-      {/* ======================================================
-          HEADER
-      ======================================================= */}
+      {/* HEADER */}
 
       <div
         className="
@@ -514,9 +818,7 @@ const Chatbot: FC<ChatbotProps> = ({ visible, onClose }) => {
         </button>
       </div>
 
-      {/* ======================================================
-          CHAT MESSAGES
-      ======================================================= */}
+      {/* CHAT MESSAGES */}
 
       <div
         ref={chatContainerRef}
@@ -555,7 +857,7 @@ const Chatbot: FC<ChatbotProps> = ({ visible, onClose }) => {
                   : "flex-row"
               }`}
             >
-              {/* Avatar */}
+              {/* AVATAR */}
 
               <img
                 src={
@@ -588,7 +890,7 @@ const Chatbot: FC<ChatbotProps> = ({ visible, onClose }) => {
                     : "items-start"
                 }`}
               >
-                {/* Message */}
+                {/* MESSAGE */}
 
                 <div
                   className={`
@@ -610,31 +912,55 @@ const Chatbot: FC<ChatbotProps> = ({ visible, onClose }) => {
                   `}
                 >
                   {msg.from === "bot" ? (
-                    <div
-                      dangerouslySetInnerHTML={{
-                        __html: renderMessage(
-                          msg.text
-                        ),
-                      }}
-                    />
+                    <div>
+                      {renderMessage(msg.text)}
+                    </div>
                   ) : (
                     <div>{msg.text}</div>
                   )}
+
+                  {/* ATTACHMENTS */}
+
+                  {msg.attachments &&
+                    msg.attachments.length > 0 && (
+                      <div className="mt-2 space-y-1.5">
+                        {msg.attachments.map(
+                          (attachment) => (
+                            <div
+                              key={`${msg.id}-${attachment.name}`}
+                              className="
+                                flex
+                                items-center
+                                gap-2
+                                rounded-lg
+                                bg-black/5
+                                px-2
+                                py-1.5
+                                text-[10px]
+                                md:text-xs
+                              "
+                            >
+                              <PaperClipIcon className="w-4 h-4 shrink-0" />
+
+                              <span className="truncate">
+                                {attachment.name}
+                              </span>
+                            </div>
+                          )
+                        )}
+                      </div>
+                    )}
                 </div>
 
-                {/* Timestamp */}
+                {/* TIMESTAMP */}
 
                 <div className="text-gray-400 mt-1 text-[9px] md:text-[10px] px-1">
-                  {formatTimestamp(
-                    msg.timestamp
-                  )}
+                  {formatTimestamp(msg.timestamp)}
                 </div>
               </div>
             </div>
 
-            {/* ==================================================
-                BACKEND SUGGESTIONS
-            =================================================== */}
+            {/* AI SUGGESTIONS */}
 
             {msg.from === "bot" &&
               msg.suggestions &&
@@ -651,7 +977,7 @@ const Chatbot: FC<ChatbotProps> = ({ visible, onClose }) => {
                         key={`${suggestion.intent}-${suggestionIndex}`}
                         type="button"
                         onClick={() =>
-                          handleSuggestionClick(
+                          void handleSuggestionClick(
                             suggestion.intent
                           )
                         }
@@ -683,9 +1009,7 @@ const Chatbot: FC<ChatbotProps> = ({ visible, onClose }) => {
           </div>
         ))}
 
-        {/* ======================================================
-            FIRST-TIME QUICK QUESTIONS
-        ======================================================= */}
+        {/* QUICK QUESTIONS */}
 
         {showQuickQuestions && (
           <div className="pt-1">
@@ -703,7 +1027,7 @@ const Chatbot: FC<ChatbotProps> = ({ visible, onClose }) => {
                   key={question}
                   type="button"
                   onClick={() =>
-                    handleQuickQuestion(question)
+                    void handleQuickQuestion(question)
                   }
                   disabled={typing}
                   className="
@@ -731,26 +1055,20 @@ const Chatbot: FC<ChatbotProps> = ({ visible, onClose }) => {
           </div>
         )}
 
-        {/* ======================================================
-            TYPING INDICATOR
-        ======================================================= */}
+        {/* TYPING INDICATOR */}
 
         {(typing || showTyping) && (
           <div className="flex items-center gap-2 text-gray-400 text-[10px] md:text-xs pl-1">
             <span>LIHANA is typing</span>
 
             <span className="w-1.5 h-1.5 bg-gray-400 rounded-full animate-bounceDelay1" />
-
             <span className="w-1.5 h-1.5 bg-gray-400 rounded-full animate-bounceDelay2" />
-
             <span className="w-1.5 h-1.5 bg-gray-400 rounded-full animate-bounceDelay3" />
           </div>
         )}
       </div>
 
-      {/* ======================================================
-          INPUT AREA
-      ======================================================= */}
+      {/* INPUT AREA */}
 
       <div
         className="
@@ -774,9 +1092,7 @@ const Chatbot: FC<ChatbotProps> = ({ visible, onClose }) => {
             md:py-3
           "
         >
-          {/* ==================================================
-              MESSAGE FORM
-          =================================================== */}
+          {/* MESSAGE FORM */}
 
           <form
             onSubmit={handleSubmit}
@@ -810,11 +1126,11 @@ const Chatbot: FC<ChatbotProps> = ({ visible, onClose }) => {
               "
             />
 
-            {/* Voice */}
+            {/* VOICE */}
 
             <button
               type="button"
-              disabled={typing}
+              disabled
               className="
                 shrink-0
                 w-7
@@ -825,22 +1141,18 @@ const Chatbot: FC<ChatbotProps> = ({ visible, onClose }) => {
                 items-center
                 justify-center
                 bg-gray-200
-                hover:bg-gray-300
                 rounded-full
                 transition
-                disabled:opacity-50
+                opacity-50
+                cursor-not-allowed
               "
-              title="Voice input"
-              onClick={() =>
-                alert(
-                  "Voice input coming soon!"
-                )
-              }
+              title="Voice input coming soon"
+              aria-label="Voice input coming soon"
             >
               <MicrophoneIcon className="w-4 h-4 text-gray-700" />
             </button>
 
-            {/* Send */}
+            {/* SEND */}
 
             <button
               type="submit"
@@ -870,15 +1182,14 @@ const Chatbot: FC<ChatbotProps> = ({ visible, onClose }) => {
             </button>
           </form>
 
-          {/* ==================================================
-              TOOLBAR
-          =================================================== */}
+          {/* TOOLBAR */}
 
           <div className="flex items-center gap-1 mt-2">
-            {/* Emoji */}
+            {/* EMOJI */}
 
             <button
               type="button"
+              disabled={typing}
               className="
                 w-7
                 h-7
@@ -888,8 +1199,10 @@ const Chatbot: FC<ChatbotProps> = ({ visible, onClose }) => {
                 hover:bg-gray-200
                 rounded-full
                 transition
+                disabled:opacity-50
               "
               title="Emoji"
+              aria-label="Open emoji picker"
               onClick={() =>
                 setShowEmojiPicker(
                   (previous) => !previous
@@ -899,43 +1212,21 @@ const Chatbot: FC<ChatbotProps> = ({ visible, onClose }) => {
               <FaceSmileIcon className="w-4 h-4 text-gray-700" />
             </button>
 
-            {/* Attachment */}
+            {/* ATTACHMENT */}
 
             <input
+              ref={attachmentInputRef}
               type="file"
               id="attachmentInput"
               className="hidden"
-              onChange={(event) => {
-                const file =
-                  event.target.files?.[0];
-
-                if (!file) return;
-
-                const attachmentMessage: Message =
-                  {
-                    id: `${Date.now()}-attachment`,
-                    from: "user",
-                    text: `📎 ${file.name}`,
-                    timestamp:
-                      new Date().toISOString(),
-                  };
-
-                setMessages((previous) => [
-                  ...previous,
-                  attachmentMessage,
-                ]);
-
-                setTimeout(() => {
-                  scrollToBottom();
-                }, 50);
-
-                // Allow selecting the same file again
-                event.target.value = "";
-              }}
+              accept={ACCEPTED_FILE_TYPES.join(",")}
+              onChange={handleAttachmentChange}
+              disabled={typing}
             />
 
             <button
               type="button"
+              disabled={typing}
               className="
                 w-7
                 h-7
@@ -945,14 +1236,12 @@ const Chatbot: FC<ChatbotProps> = ({ visible, onClose }) => {
                 hover:bg-gray-200
                 rounded-full
                 transition
+                disabled:opacity-50
               "
               title="Attach file"
+              aria-label="Attach file"
               onClick={() =>
-                document
-                  .getElementById(
-                    "attachmentInput"
-                  )
-                  ?.click()
+                attachmentInputRef.current?.click()
               }
             >
               <PaperClipIcon className="w-4 h-4 text-gray-700" />
@@ -962,6 +1251,7 @@ const Chatbot: FC<ChatbotProps> = ({ visible, onClose }) => {
 
             <button
               type="button"
+              disabled
               className="
                 w-7
                 h-7
@@ -971,21 +1261,17 @@ const Chatbot: FC<ChatbotProps> = ({ visible, onClose }) => {
                 hover:bg-gray-200
                 rounded-full
                 transition
+                opacity-50
+                cursor-not-allowed
               "
-              title="GIF"
-              onClick={() =>
-                setShowGifPopup(
-                  (previous) => !previous
-                )
-              }
+              title="GIF support coming soon"
+              aria-label="GIF support coming soon"
             >
               <PhotoIcon className="w-4 h-4 text-gray-700" />
             </button>
           </div>
 
-          {/* ==================================================
-              EMOJI PICKER
-          =================================================== */}
+          {/* EMOJI PICKER */}
 
           {showEmojiPicker && (
             <div
@@ -1004,13 +1290,12 @@ const Chatbot: FC<ChatbotProps> = ({ visible, onClose }) => {
                 onEmojiClick={(emojiObject) => {
                   setInput(
                     (previous) =>
-                      previous +
-                      emojiObject.emoji
+                      previous + emojiObject.emoji
                   );
 
                   setShowEmojiPicker(false);
 
-                  setTimeout(() => {
+                  window.setTimeout(() => {
                     inputRef.current?.focus();
                   }, 50);
                 }}
@@ -1020,53 +1305,9 @@ const Chatbot: FC<ChatbotProps> = ({ visible, onClose }) => {
               />
             </div>
           )}
-
-          {/* ==================================================
-              GIF POPUP
-          =================================================== */}
-
-          {showGifPopup && (
-            <div
-              className="
-                absolute
-                bottom-20
-                left-2
-                z-[10000]
-                bg-white
-                border
-                border-gray-200
-                shadow-2xl
-                rounded-xl
-                p-4
-                w-64
-              "
-            >
-              <div className="flex items-center justify-between mb-2">
-                <span className="font-semibold text-sm text-gray-700">
-                  GIFs
-                </span>
-
-                <button
-                  type="button"
-                  onClick={() =>
-                    setShowGifPopup(false)
-                  }
-                  className="text-gray-400 hover:text-gray-700"
-                >
-                  <XMarkIcon className="w-4 h-4" />
-                </button>
-              </div>
-
-              <div className="text-xs text-gray-500">
-                GIF support can be connected to a GIF provider later.
-              </div>
-            </div>
-          )}
         </div>
 
-        {/* ======================================================
-            PRIVACY NOTICE
-        ======================================================= */}
+        {/* PRIVACY NOTICE */}
 
         <div
           className="
