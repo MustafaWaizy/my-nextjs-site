@@ -1001,7 +1001,7 @@ function getLocalResponse(
   ) {
     return {
       response:
-        "You can contact LinorAI at:\n\nEmail: info@linorAI.com\nPhone: (619) 622-3468\nWebsite: https://linorAi.com",
+        "You can contact LinorAI at:\n\nEmail: info@linorAI.com\nPhone: (619) 622-3468\nWebsite: https://linorAI.com",
       suggestions: [
         {
           intent:
