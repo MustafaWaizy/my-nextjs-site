@@ -92,7 +92,7 @@ const GEMINI_URL =
 */
 
 const FALLBACK_REPLY =
-  "I'm sorry, I couldn't process that right now. Please try again or contact the LinorAI team directly at info@linorai.ai.";
+  "I'm sorry, I couldn't process that right now. Please try again or contact the LinorAI team directly at info@linorai.com.";
 
 /*
 |--------------------------------------------------------------------------
@@ -185,10 +185,10 @@ Company:
 LinorAI
 
 Website:
-https://linorai.ai
+https://linorAI.com
 
 General email:
-info@linorai.ai
+info@linorAI.com
 
 Phone:
 (619) 622-3468
@@ -382,11 +382,11 @@ If the user asks:
 
 provide:
 
-Email: info@linorai.ai
+Email: info@linorAI.com
 
 Phone: (619) 622-3468
 
-Website: https://linorai.ai
+Website: https://linorAI.com
 
 Do not invent additional contact information.
 
@@ -1001,7 +1001,7 @@ function getLocalResponse(
   ) {
     return {
       response:
-        "You can contact LinorAI at:\n\nEmail: info@linorai.ai\nPhone: (619) 622-3468\nWebsite: https://linorai.ai",
+        "You can contact LinorAI at:\n\nEmail: info@linorAI.com\nPhone: (619) 622-3468\nWebsite: https://linorAi.com",
       suggestions: [
         {
           intent:
