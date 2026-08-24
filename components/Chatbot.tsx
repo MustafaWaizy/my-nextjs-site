@@ -11,12 +11,10 @@ import {
 } from "react";
 import {
   PaperClipIcon,
-  PhotoIcon,
-  MicrophoneIcon,
-  ArrowUpCircleIcon,
   FaceSmileIcon,
   XMarkIcon,
   SparklesIcon,
+  PaperAirplaneIcon,
 } from "@heroicons/react/24/outline";
 import Picker from "emoji-picker-react";
 
@@ -32,6 +30,12 @@ interface ChatAttachment {
   dataUrl?: string;
 }
 
+interface GeminiPart {
+  text?: string;
+  thought?: boolean;
+  thoughtSignature?: string;
+}
+
 interface Message {
   id: string;
   from: "user" | "bot";
@@ -39,6 +43,7 @@ interface Message {
   timestamp: string;
   suggestions?: Suggestion[];
   attachments?: ChatAttachment[];
+  geminiParts?: GeminiPart[];
 }
 
 interface ChatbotProps {
@@ -49,6 +54,7 @@ interface ChatbotProps {
 interface BackendResponse {
   response?: unknown;
   suggestions?: unknown;
+  modelParts?: unknown;
 }
 
 const QUICK_QUESTIONS = [
@@ -60,15 +66,14 @@ const QUICK_QUESTIONS = [
 const INITIAL_GREETING: Message = {
   id: "initial-greeting",
   from: "bot",
-  text:
-    "Hi! I'm LIHANA, LinorAI's AI support assistant. I can help you learn about our services, AI solutions, IT support, web development, and how to contact our team.",
+  text: "Hi! I'm LIHANA. Ask about our AI, IT, web, or contact services.",
   timestamp: new Date().toISOString(),
 };
 
 const FALLBACK_REPLY =
-  "I'm sorry, I couldn't process that right now. Please try again or contact the LinorAI team directly.";
+  "I can't answer that right now. Please try again.";
 
-const SUPPORT_EMAIL = "info@linorai.ai";
+const SUPPORT_EMAIL = "info@linorAI.com";
 
 const MAX_ATTACHMENT_SIZE = 10 * 1024 * 1024;
 
@@ -89,6 +94,33 @@ const URL_REGEX =
 
 const EMAIL_REGEX =
   /[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/g;
+
+function normalizeGeminiParts(value: unknown): GeminiPart[] {
+  if (!Array.isArray(value)) {
+    return [];
+  }
+
+  return value
+    .filter(
+      (item): item is GeminiPart =>
+        typeof item === "object" &&
+        item !== null &&
+        (typeof (item as GeminiPart).text === "string" ||
+          typeof (item as GeminiPart).thoughtSignature ===
+            "string")
+    )
+    .map((item) => ({
+      ...(typeof item.text === "string"
+        ? { text: item.text }
+        : {}),
+      ...(typeof item.thought === "boolean"
+        ? { thought: item.thought }
+        : {}),
+      ...(typeof item.thoughtSignature === "string"
+        ? { thoughtSignature: item.thoughtSignature }
+        : {}),
+    }));
+}
 
 const Chatbot: FC<ChatbotProps> = ({ visible, onClose }) => {
   const [input, setInput] = useState("");
@@ -140,69 +172,85 @@ const Chatbot: FC<ChatbotProps> = ({ visible, onClose }) => {
       return [];
     }
 
-    const combinedRegex = new RegExp(
-      `(${URL_REGEX.source})|(${EMAIL_REGEX.source})`,
-      "gi"
-    );
+    const renderInline = (
+      line: string,
+      lineIndex: number
+    ): ReactNode[] => {
+      const combinedRegex = new RegExp(
+        `(${URL_REGEX.source})|(${EMAIL_REGEX.source})`,
+        "gi"
+      );
+      const parts: ReactNode[] = [];
+      let lastIndex = 0;
+      let match: RegExpExecArray | null;
 
-    const parts: ReactNode[] = [];
-    let lastIndex = 0;
-    let match: RegExpExecArray | null;
+      while ((match = combinedRegex.exec(line)) !== null) {
+        const matchStart = match.index;
+        const matchEnd = combinedRegex.lastIndex;
 
-    combinedRegex.lastIndex = 0;
+        if (matchStart > lastIndex) {
+          parts.push(
+            <span key={`text-${lineIndex}-${lastIndex}`}>
+              {line.slice(lastIndex, matchStart)}
+            </span>
+          );
+        }
 
-    while ((match = combinedRegex.exec(text)) !== null) {
-      const matchStart = match.index;
-      const matchEnd = combinedRegex.lastIndex;
+        const value = match[0];
+        const isUrl = /^https?:\/\//i.test(value);
 
-      if (matchStart > lastIndex) {
         parts.push(
-          <span key={`text-${lastIndex}`}>
-            {text.slice(lastIndex, matchStart)}
+          <a
+            key={`${isUrl ? "url" : "email"}-${lineIndex}-${matchStart}`}
+            href={isUrl ? value : `mailto:${value}`}
+            target={isUrl ? "_blank" : undefined}
+            rel={isUrl ? "noopener noreferrer" : undefined}
+            className="font-medium text-blue-700 underline decoration-blue-300 underline-offset-2 hover:text-blue-900 break-all"
+          >
+            {value}
+          </a>
+        );
+
+        lastIndex = matchEnd;
+      }
+
+      if (lastIndex < line.length) {
+        parts.push(
+          <span key={`text-${lineIndex}-${lastIndex}`}>
+            {line.slice(lastIndex)}
           </span>
         );
       }
 
-      const value = match[0];
+      return parts;
+    };
 
-      const isUrl = /^https?:\/\//i.test(value);
+    return text.split("\n").map((line, index) => {
+      const bulletMatch = line.trim().match(/^[•*-]\s+(.+)$/);
 
-      if (isUrl) {
-        parts.push(
-          <a
-            key={`url-${matchStart}`}
-            href={value}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-blue-600 underline hover:text-blue-800 break-all"
+      if (bulletMatch) {
+        return (
+          <div
+            key={`bullet-${index}`}
+            className="flex gap-2 py-0.5"
           >
-            {value}
-          </a>
-        );
-      } else {
-        parts.push(
-          <a
-            key={`email-${matchStart}`}
-            href={`mailto:${value}`}
-            className="text-blue-600 underline hover:text-blue-800 break-all"
-          >
-            {value}
-          </a>
+            <span className="mt-1 h-1.5 w-1.5 shrink-0 rounded-full bg-blue-500" />
+            <span className="min-w-0">
+              {renderInline(bulletMatch[1], index)}
+            </span>
+          </div>
         );
       }
 
-      lastIndex = matchEnd;
-    }
-
-    if (lastIndex < text.length) {
-      parts.push(
-        <span key={`text-${lastIndex}`}>
-          {text.slice(lastIndex)}
-        </span>
+      return (
+        <p
+          key={`line-${index}`}
+          className={index > 0 ? "mt-2" : undefined}
+        >
+          {renderInline(line, index)}
+        </p>
       );
-    }
-
-    return parts;
+    });
   }, []);
 
   /*
@@ -275,10 +323,16 @@ const Chatbot: FC<ChatbotProps> = ({ visible, onClose }) => {
       currentMessages: Message[],
       attachments: ChatAttachment[] = []
     ) => {
-      const history = currentMessages.slice(-12).map((message) => ({
-        role: message.from === "bot" ? "assistant" : "user",
-        content: message.text,
-      }));
+      const history = currentMessages
+        .filter((message) => message.id !== INITIAL_GREETING.id)
+        .slice(-11)
+        .map((message) => ({
+          role: message.from === "bot" ? "assistant" : "user",
+          content: message.text,
+          ...(message.geminiParts
+            ? { parts: message.geminiParts }
+            : {}),
+        }));
 
       const response = await fetch("/api/chat", {
         method: "POST",
@@ -335,9 +389,12 @@ const Chatbot: FC<ChatbotProps> = ({ visible, onClose }) => {
             .slice(0, 3)
         : [];
 
+      const modelParts = normalizeGeminiParts(data.modelParts);
+
       return {
         response: responseText,
         suggestions,
+        modelParts,
       };
     },
     []
@@ -372,6 +429,13 @@ const Chatbot: FC<ChatbotProps> = ({ visible, onClose }) => {
         timestamp: new Date().toISOString(),
         attachments:
           attachments.length > 0 ? attachments : undefined,
+        geminiParts: [
+          {
+            text:
+              messageText ||
+              "Please review the attached file.",
+          },
+        ],
       };
 
       const nextMessages = [...messages, userMessage];
@@ -398,6 +462,10 @@ const Chatbot: FC<ChatbotProps> = ({ visible, onClose }) => {
           text: result.response,
           timestamp: new Date().toISOString(),
           suggestions: result.suggestions,
+          geminiParts:
+            result.modelParts.length > 0
+              ? result.modelParts
+              : undefined,
         };
 
         setMessages((previous) => [
@@ -411,12 +479,16 @@ const Chatbot: FC<ChatbotProps> = ({ visible, onClose }) => {
       } catch (error) {
         console.error("LIHANA API error:", error);
 
+        const serviceMessage =
+          error instanceof Error &&
+          error.message.startsWith("LIHANA")
+            ? error.message
+            : `LIHANA is unavailable right now. Try again or email ${SUPPORT_EMAIL}.`;
+
         const errorMessage: Message = {
           id: `${Date.now()}-error`,
           from: "bot",
-          text:
-            `I'm having trouble connecting to the LIHANA service right now. ` +
-            `Please try again in a moment or contact the LinorAI team directly at ${SUPPORT_EMAIL}.`,
+          text: serviceMessage,
           timestamp: new Date().toISOString(),
         };
 
@@ -732,16 +804,17 @@ const Chatbot: FC<ChatbotProps> = ({ visible, onClose }) => {
         fixed
         inset-0
         md:inset-auto
-        md:top-16
-        md:right-8
+        md:top-20
+        md:right-7
         w-full
-        md:w-[500px]
+        md:w-[460px]
         h-[100dvh]
-        md:h-[85vh]
-        md:max-h-[760px]
-        bg-white
-        md:rounded-2xl
-        shadow-2xl
+        md:h-[min(760px,calc(100vh-7rem))]
+        bg-white/95
+        md:rounded-[28px]
+        border
+        border-slate-200/80
+        shadow-[0_24px_80px_rgba(15,23,42,0.22)]
         flex
         flex-col
         z-[9999]
@@ -756,45 +829,62 @@ const Chatbot: FC<ChatbotProps> = ({ visible, onClose }) => {
 
       <div
         className="
+          relative
+          overflow-hidden
           shrink-0
           px-4
-          py-3
+          py-3.5
+          md:px-5
           bg-gradient-to-r
-          from-blue-600
-          via-indigo-600
-          to-purple-600
+          from-slate-950
+          via-blue-950
+          to-indigo-950
           text-white
           flex
           items-center
           justify-between
-          md:rounded-t-2xl
+          md:rounded-t-[27px]
         "
       >
-        <div className="flex items-center gap-3">
+        <div className="absolute -right-10 -top-16 h-36 w-36 rounded-full bg-blue-400/20 blur-2xl" />
+        <div className="absolute -left-12 -bottom-20 h-32 w-32 rounded-full bg-indigo-400/15 blur-2xl" />
+
+        <div className="relative flex items-center gap-3">
           <div
             className="
-              w-10
-              h-10
+              w-11
+              h-11
               rounded-full
-              bg-white/20
-              backdrop-blur
+              bg-white
+              p-0.5
               flex
               items-center
               justify-center
-              border
-              border-white/20
+              shadow-lg
+              shadow-blue-950/30
             "
           >
-            <SparklesIcon className="w-5 h-5" />
+            <img
+              src="/bot.png"
+              alt="LIHANA"
+              className="h-full w-full rounded-full object-cover"
+            />
           </div>
 
           <div>
-            <div className="font-semibold text-sm md:text-base">
-              ASK LIHANA
+            <div className="flex items-center gap-2">
+              <div className="font-semibold tracking-tight text-sm md:text-base">
+                LIHANA
+              </div>
+
+              <span className="inline-flex items-center gap-1 rounded-full bg-emerald-400/15 px-1.5 py-0.5 text-[9px] font-medium text-emerald-200">
+                <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />
+                Online
+              </span>
             </div>
 
-            <div className="text-[10px] md:text-xs text-white/80">
-              LinorAI AI Support Assistant
+            <div className="mt-0.5 text-[10px] text-slate-300 md:text-xs">
+              LinorAI support assistant
             </div>
           </div>
         </div>
@@ -804,14 +894,23 @@ const Chatbot: FC<ChatbotProps> = ({ visible, onClose }) => {
           onClick={onClose}
           aria-label="Close LIHANA"
           className="
+            relative
             w-9
             h-9
             rounded-full
             flex
             items-center
             justify-center
+            border
+            border-white/10
+            bg-white/5
+            text-slate-200
             hover:bg-white/15
-            transition
+            hover:text-white
+            transition-colors
+            focus:outline-none
+            focus:ring-2
+            focus:ring-white/70
           "
         >
           <XMarkIcon className="w-5 h-5" />
@@ -827,24 +926,27 @@ const Chatbot: FC<ChatbotProps> = ({ visible, onClose }) => {
           min-h-0
           overflow-y-auto
           overscroll-contain
-          p-3
-          md:p-4
-          space-y-3
+          px-3
+          py-4
+          md:px-5
+          md:py-5
+          space-y-5
           font-sans
           text-xs
           md:text-sm
           leading-relaxed
-          bg-gray-50
+          bg-[radial-gradient(circle_at_top,_#eff6ff_0,_#f8fafc_38%,_#f8fafc_100%)]
           scroll-smooth
         "
+        aria-live="polite"
         style={{
           WebkitOverflowScrolling: "touch",
         }}
       >
-        {messages.map((msg, index) => (
+        {messages.map((msg) => (
           <div
             key={msg.id}
-            className={`flex ${
+            className={`animate-chatMessage flex ${
               msg.from === "user"
                 ? "justify-end"
                 : "justify-start"
@@ -871,10 +973,11 @@ const Chatbot: FC<ChatbotProps> = ({ visible, onClose }) => {
                   md:w-9
                   md:h-9
                   object-cover
-                  border
-                  border-gray-200
+                  border-2
+                  border-white
                   rounded-full
                   shrink-0
+                  shadow-sm
                 "
                 alt={
                   msg.from === "user"
@@ -893,21 +996,31 @@ const Chatbot: FC<ChatbotProps> = ({ visible, onClose }) => {
                 {/* MESSAGE */}
 
                 <div
+                  className={`mb-1 px-1 text-[10px] font-semibold tracking-wide ${
+                    msg.from === "bot"
+                      ? "text-slate-500"
+                      : "text-blue-700"
+                  }`}
+                >
+                  {msg.from === "bot" ? "LIHANA" : "YOU"}
+                </div>
+
+                <div
                   className={`
                     px-3
-                    py-2
+                    py-2.5
                     md:px-4
-                    md:py-2.5
-                    rounded-2xl
-                    shadow-sm
+                    md:py-3
+                    rounded-[18px]
+                    shadow-[0_2px_10px_rgba(15,23,42,0.05)]
                     whitespace-pre-wrap
                     break-words
-                    max-w-[78vw]
-                    md:max-w-[390px]
+                    max-w-[76vw]
+                    md:max-w-[350px]
                     ${
                       msg.from === "bot"
-                        ? "bg-white border border-gray-200 text-gray-800 rounded-tl-md"
-                        : "bg-blue-600 text-white rounded-tr-md"
+                        ? "bg-white border border-slate-200/80 text-slate-700 rounded-tl-md"
+                        : "bg-gradient-to-br from-blue-600 to-indigo-600 text-white rounded-tr-md shadow-blue-500/20"
                     }
                   `}
                 >
@@ -957,71 +1070,85 @@ const Chatbot: FC<ChatbotProps> = ({ visible, onClose }) => {
                 <div className="text-gray-400 mt-1 text-[9px] md:text-[10px] px-1">
                   {formatTimestamp(msg.timestamp)}
                 </div>
+
+                {/* AI SUGGESTIONS */}
+
+                {msg.from === "bot" &&
+                  msg.suggestions &&
+                  msg.suggestions.length > 0 && (
+                    <div className="mt-3 w-full max-w-[76vw] md:max-w-[350px]">
+                      <div className="mb-2 flex items-center gap-1.5 px-1 text-[10px] font-medium text-slate-500">
+                        <SparklesIcon className="h-3.5 w-3.5 text-blue-600" />
+                        Continue exploring
+                      </div>
+
+                      <div className="flex flex-wrap gap-1.5">
+                        {msg.suggestions.map(
+                          (suggestion, suggestionIndex) => (
+                            <button
+                              key={`${suggestion.intent}-${suggestionIndex}`}
+                              type="button"
+                              onClick={() =>
+                                void handleSuggestionClick(
+                                  suggestion.intent
+                                )
+                              }
+                              disabled={typing}
+                              className="
+                                rounded-full
+                                border
+                                border-blue-100
+                                bg-white/90
+                                px-3
+                                py-1.5
+                                text-left
+                                text-[10px]
+                                font-medium
+                                text-blue-700
+                                shadow-sm
+                                transition-colors
+                                hover:border-blue-200
+                                hover:bg-blue-50
+                                focus:outline-none
+                                focus:ring-2
+                                focus:ring-blue-500/30
+                                md:text-xs
+                                disabled:cursor-not-allowed
+                                disabled:opacity-50
+                              "
+                            >
+                              {suggestion.text}
+                            </button>
+                          )
+                        )}
+                      </div>
+                    </div>
+                  )}
               </div>
             </div>
-
-            {/* AI SUGGESTIONS */}
-
-            {msg.from === "bot" &&
-              msg.suggestions &&
-              msg.suggestions.length > 0 &&
-              index === messages.length - 1 && (
-                <div className="ml-10 md:ml-12 mt-2 flex flex-col gap-1.5 max-w-[80%]">
-                  <div className="text-blue-700 font-semibold text-[10px] md:text-xs">
-                    You may also want to ask:
-                  </div>
-
-                  {msg.suggestions.map(
-                    (suggestion, suggestionIndex) => (
-                      <button
-                        key={`${suggestion.intent}-${suggestionIndex}`}
-                        type="button"
-                        onClick={() =>
-                          void handleSuggestionClick(
-                            suggestion.intent
-                          )
-                        }
-                        disabled={typing}
-                        className="
-                          text-left
-                          px-3
-                          py-2
-                          border
-                          border-blue-200
-                          bg-white
-                          text-blue-700
-                          rounded-xl
-                          hover:bg-blue-50
-                          hover:border-blue-300
-                          transition
-                          text-[10px]
-                          md:text-xs
-                          disabled:opacity-50
-                          disabled:cursor-not-allowed
-                        "
-                      >
-                        {suggestion.text}
-                      </button>
-                    )
-                  )}
-                </div>
-              )}
           </div>
         ))}
 
         {/* QUICK QUESTIONS */}
 
         {showQuickQuestions && (
-          <div className="pt-1">
-            <div className="flex items-center gap-2 mb-2">
-              <SparklesIcon className="w-4 h-4 text-blue-600" />
-
-              <span className="text-xs md:text-sm font-semibold text-gray-700">
-                Quick questions
+          <div className="ml-10 rounded-2xl border border-blue-100 bg-blue-50/70 p-3 md:ml-12 md:p-3.5">
+            <div className="flex items-center gap-2">
+              <span className="flex h-7 w-7 items-center justify-center rounded-full bg-white text-blue-600 shadow-sm">
+                <SparklesIcon className="h-4 w-4" />
               </span>
+
+              <div>
+                <div className="text-xs font-semibold text-slate-800">
+                  Start a conversation
+                </div>
+                <div className="text-[10px] text-slate-500 md:text-xs">
+                  Select a topic or write your own question.
+                </div>
+              </div>
             </div>
 
-            <div className="flex flex-col gap-2">
+            <div className="mt-3 flex flex-wrap gap-2">
               {QUICK_QUESTIONS.map((question) => (
                 <button
                   key={question}
@@ -1031,19 +1158,24 @@ const Chatbot: FC<ChatbotProps> = ({ visible, onClose }) => {
                   }
                   disabled={typing}
                   className="
-                    text-left
+                    rounded-full
                     px-3
-                    py-2.5
+                    py-2
                     bg-white
                     border
-                    border-blue-200
+                    border-blue-100
                     text-blue-700
-                    rounded-xl
+                    text-left
+                    text-[10px]
+                    font-medium
+                    shadow-sm
                     hover:bg-blue-50
                     hover:border-blue-300
-                    transition
-                    text-xs
-                    md:text-sm
+                    transition-colors
+                    focus:outline-none
+                    focus:ring-2
+                    focus:ring-blue-500/30
+                    md:text-xs
                     disabled:opacity-50
                     disabled:cursor-not-allowed
                   "
@@ -1058,12 +1190,18 @@ const Chatbot: FC<ChatbotProps> = ({ visible, onClose }) => {
         {/* TYPING INDICATOR */}
 
         {(typing || showTyping) && (
-          <div className="flex items-center gap-2 text-gray-400 text-[10px] md:text-xs pl-1">
-            <span>LIHANA is typing</span>
-
-            <span className="w-1.5 h-1.5 bg-gray-400 rounded-full animate-bounceDelay1" />
-            <span className="w-1.5 h-1.5 bg-gray-400 rounded-full animate-bounceDelay2" />
-            <span className="w-1.5 h-1.5 bg-gray-400 rounded-full animate-bounceDelay3" />
+          <div className="animate-chatMessage flex items-center gap-2 pl-1 text-[10px] text-slate-500 md:text-xs">
+            <img
+              src="/bot.png"
+              alt=""
+              className="h-7 w-7 rounded-full border-2 border-white object-cover shadow-sm"
+            />
+            <div className="flex items-center gap-1.5 rounded-2xl rounded-tl-md border border-slate-200 bg-white px-3 py-2 shadow-sm">
+              <span>LIHANA is typing</span>
+              <span className="h-1.5 w-1.5 rounded-full bg-blue-500 animate-bounceDelay1" />
+              <span className="h-1.5 w-1.5 rounded-full bg-blue-500 animate-bounceDelay2" />
+              <span className="h-1.5 w-1.5 rounded-full bg-blue-500 animate-bounceDelay3" />
+            </div>
           </div>
         )}
       </div>
@@ -1073,30 +1211,44 @@ const Chatbot: FC<ChatbotProps> = ({ visible, onClose }) => {
       <div
         className="
           shrink-0
-          p-2
-          md:p-3
           border-t
-          border-gray-200
+          border-slate-200/80
           bg-white
+          px-3
+          pb-2.5
+          pt-3
+          md:px-4
+          md:pb-3
+          md:pt-4
         "
       >
         <div
           className="
             relative
             w-full
-            bg-gray-100
-            rounded-2xl
-            px-2
-            py-2
-            md:px-3
-            md:py-3
           "
         >
           {/* MESSAGE FORM */}
 
           <form
             onSubmit={handleSubmit}
-            className="flex items-center gap-2 w-full"
+            className="
+              flex
+              w-full
+              items-center
+              gap-1
+              rounded-[20px]
+              border
+              border-slate-200
+              bg-slate-50
+              p-1.5
+              shadow-[0_1px_2px_rgba(15,23,42,0.04)]
+              transition-colors
+              focus-within:border-blue-300
+              focus-within:bg-white
+              focus-within:ring-4
+              focus-within:ring-blue-500/10
+            "
           >
             <input
               ref={inputRef}
@@ -1106,7 +1258,7 @@ const Chatbot: FC<ChatbotProps> = ({ visible, onClose }) => {
               onChange={(event) =>
                 setInput(event.target.value)
               }
-              placeholder="Ask LIHANA a question..."
+              placeholder="Ask LIHANA anything..."
               autoComplete="off"
               autoCorrect="on"
               spellCheck={true}
@@ -1120,36 +1272,45 @@ const Chatbot: FC<ChatbotProps> = ({ visible, onClose }) => {
                 border-none
                 text-[16px]
                 md:text-sm
-                text-gray-900
-                placeholder-gray-500
+                px-1.5
+                text-slate-800
+                placeholder:text-slate-400
                 disabled:opacity-60
               "
             />
 
-            {/* VOICE */}
+            {/* EMOJI */}
 
             <button
               type="button"
-              disabled
+              disabled={typing}
               className="
                 shrink-0
-                w-7
-                h-7
-                md:w-8
-                md:h-8
+                w-9
+                h-9
                 flex
                 items-center
                 justify-center
-                bg-gray-200
-                rounded-full
-                transition
-                opacity-50
-                cursor-not-allowed
+                rounded-xl
+                text-slate-500
+                hover:bg-slate-200/70
+                hover:text-slate-700
+                transition-colors
+                focus:outline-none
+                focus:ring-2
+                focus:ring-blue-500/30
+                disabled:opacity-40
+                disabled:cursor-not-allowed
               "
-              title="Voice input coming soon"
-              aria-label="Voice input coming soon"
+              title="Add an emoji"
+              aria-label="Open emoji picker"
+              onClick={() =>
+                setShowEmojiPicker(
+                  (previous) => !previous
+                )
+              }
             >
-              <MicrophoneIcon className="w-4 h-4 text-gray-700" />
+              <FaceSmileIcon className="w-[18px] h-[18px]" />
             </button>
 
             {/* SEND */}
@@ -1163,56 +1324,40 @@ const Chatbot: FC<ChatbotProps> = ({ visible, onClose }) => {
               title="Send message"
               className="
                 shrink-0
-                w-8
-                h-8
-                md:w-9
-                md:h-9
+                w-9
+                h-9
                 flex
                 items-center
                 justify-center
-                bg-blue-600
-                hover:bg-blue-700
-                disabled:bg-gray-300
+                rounded-xl
+                bg-gradient-to-br
+                from-blue-600
+                to-indigo-600
+                text-white
+                shadow-sm
+                shadow-blue-500/30
+                hover:scale-[1.03]
+                hover:from-blue-700
+                hover:to-indigo-700
+                transition-all
+                focus:outline-none
+                focus:ring-2
+                focus:ring-blue-500/40
+                disabled:bg-slate-200
+                disabled:bg-none
+                disabled:text-slate-400
+                disabled:shadow-none
+                disabled:scale-100
                 disabled:cursor-not-allowed
-                rounded-full
-                transition
               "
             >
-              <ArrowUpCircleIcon className="w-5 h-5 text-white" />
+              <PaperAirplaneIcon className="w-4 h-4 -rotate-45 translate-x-px" />
             </button>
           </form>
 
           {/* TOOLBAR */}
 
-          <div className="flex items-center gap-1 mt-2">
-            {/* EMOJI */}
-
-            <button
-              type="button"
-              disabled={typing}
-              className="
-                w-7
-                h-7
-                flex
-                items-center
-                justify-center
-                hover:bg-gray-200
-                rounded-full
-                transition
-                disabled:opacity-50
-              "
-              title="Emoji"
-              aria-label="Open emoji picker"
-              onClick={() =>
-                setShowEmojiPicker(
-                  (previous) => !previous
-                )
-              }
-            >
-              <FaceSmileIcon className="w-4 h-4 text-gray-700" />
-            </button>
-
-            {/* ATTACHMENT */}
+          <div className="mt-2 flex items-center justify-between px-1 text-[9px] md:text-[10px]">
 
             <input
               ref={attachmentInputRef}
@@ -1228,47 +1373,34 @@ const Chatbot: FC<ChatbotProps> = ({ visible, onClose }) => {
               type="button"
               disabled={typing}
               className="
-                w-7
-                h-7
                 flex
                 items-center
-                justify-center
-                hover:bg-gray-200
-                rounded-full
-                transition
+                gap-1.5
+                rounded-lg
+                px-1.5
+                py-1
+                font-medium
+                text-slate-500
+                transition-colors
+                hover:bg-slate-100
+                hover:text-slate-700
+                focus:outline-none
+                focus:ring-2
+                focus:ring-blue-500/30
+                disabled:cursor-not-allowed
                 disabled:opacity-50
               "
-              title="Attach file"
+              title="Attach a file"
               aria-label="Attach file"
               onClick={() =>
                 attachmentInputRef.current?.click()
               }
             >
-              <PaperClipIcon className="w-4 h-4 text-gray-700" />
+              <PaperClipIcon className="h-3.5 w-3.5" />
+              Attach a file
             </button>
 
-            {/* GIF */}
-
-            <button
-              type="button"
-              disabled
-              className="
-                w-7
-                h-7
-                flex
-                items-center
-                justify-center
-                hover:bg-gray-200
-                rounded-full
-                transition
-                opacity-50
-                cursor-not-allowed
-              "
-              title="GIF support coming soon"
-              aria-label="GIF support coming soon"
-            >
-              <PhotoIcon className="w-4 h-4 text-gray-700" />
-            </button>
+            <span className="text-slate-400">Press Enter to send</span>
           </div>
 
           {/* EMOJI PICKER */}
@@ -1278,12 +1410,14 @@ const Chatbot: FC<ChatbotProps> = ({ visible, onClose }) => {
               ref={emojiPickerRef}
               className="
                 absolute
-                bottom-20
-                left-2
+                bottom-16
+                left-0
                 z-[10000]
-                shadow-2xl
-                rounded-xl
+                rounded-2xl
                 overflow-hidden
+                border
+                border-slate-200
+                shadow-2xl
               "
             >
               <Picker
@@ -1312,20 +1446,16 @@ const Chatbot: FC<ChatbotProps> = ({ visible, onClose }) => {
         <div
           className="
             w-full
-            mt-2
+            mt-1
             px-2
-            md:px-3
-            py-1.5
-            text-[8px]
-            md:text-[10px]
-            text-gray-400
+            py-1
+            text-[9px]
+            text-slate-400
             text-center
             leading-snug
           "
         >
-          LIHANA uses your message to provide a better support
-          response. Please avoid sharing sensitive personal
-          information.
+          Please avoid sharing sensitive personal information in chat.
         </div>
       </div>
     </div>

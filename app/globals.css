@@ -55,6 +55,22 @@ body {
   animation-delay: 0.4s;
 }
 
+@keyframes chatMessageIn {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-chatMessage {
+  animation: chatMessageIn 220ms ease-out both;
+}
+
 /* =========================
    Pulsing Glow Animation
 ========================= */
